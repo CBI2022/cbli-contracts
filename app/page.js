@@ -121,8 +121,83 @@ export default function App() {
 
   const toggleLang = (code) => setForm(prev => ({ ...prev, languages: prev.languages.includes(code) ? prev.languages.filter(l=>l!==code) : [...prev.languages, code] }));
 
+  const validate = (s) => {
+    if (s === 1) {
+      if (!form.type) return "Select a contract type";
+      if (!form.date) return "Enter the date";
+      if (!form.city?.trim()) return "Enter the city";
+    }
+    if (s === 2) {
+      if (!form.buyer.name?.trim()) return "Enter buyer's full name";
+      if (!form.buyer.nationality?.trim() || form.buyer.nationality === "otros") return "Select buyer's nationality";
+      if (!form.buyer.idNumber?.trim()) return "Enter buyer's ID number";
+      if (!form.buyer.address?.trim()) return "Enter buyer's address";
+      if (form.buyer.hasPartner) {
+        if (!form.buyer.partner.name?.trim()) return "Enter buyer partner's full name";
+        if (!form.buyer.partner.nationality?.trim() || form.buyer.partner.nationality === "otros") return "Select buyer partner's nationality";
+        if (!form.buyer.partner.idNumber?.trim()) return "Enter buyer partner's ID number";
+      }
+      if (!form.seller.name?.trim()) return "Enter seller's full name";
+      if (!form.seller.nationality?.trim() || form.seller.nationality === "otros") return "Select seller's nationality";
+      if (!form.seller.idNumber?.trim()) return "Enter seller's ID number";
+      if (!form.seller.address?.trim()) return "Enter seller's address";
+      if (form.seller.hasPartner) {
+        if (!form.seller.partner.name?.trim()) return "Enter seller partner's full name";
+        if (!form.seller.partner.nationality?.trim() || form.seller.partner.nationality === "otros") return "Select seller partner's nationality";
+        if (!form.seller.partner.idNumber?.trim()) return "Enter seller partner's ID number";
+      }
+    }
+    if (s === 3) {
+      if (!form.property.address?.trim()) return "Enter the property address";
+      if (!form.property.catastral?.trim()) return "Enter the referencia catastral";
+      if (!form.property.ref?.trim()) return "Enter the property reference number";
+      if (!form.property.registry?.trim()) return "Enter the property registry";
+      if (!form.property.finca?.trim()) return "Enter the finca number";
+      if (!form.property.tomo?.trim()) return "Enter the tomo";
+      if (!form.property.libro?.trim()) return "Enter the libro";
+      if (!form.property.folio?.trim()) return "Enter the folio";
+      for (let i = 0; i < form.extraProperties.length; i++) {
+        const ep = form.extraProperties[i];
+        if (ep.enabled) {
+          const label = i === 0 ? "Aparcamiento" : "Trastero";
+          if (!ep.catastral?.trim()) return `Enter ${label} referencia catastral`;
+          if (!ep.finca?.trim()) return `Enter ${label} finca number`;
+          if (!ep.tomo?.trim()) return `Enter ${label} tomo`;
+          if (!ep.libro?.trim()) return `Enter ${label} libro`;
+          if (!ep.folio?.trim()) return `Enter ${label} folio`;
+        }
+      }
+    }
+    if (s === 4) {
+      if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total price";
+      if (!form.price.reservation || parseFloat(form.price.reservation) <= 0) return "Enter the reservation amount";
+      if (!form.price.reservationDate) return "Enter the reservation date";
+      if (form.type === "arras") {
+        if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras deposit amount";
+        if (!form.price.arrasDeadline) return "Enter the arras deadline";
+        if (!form.bank.iban?.trim()) return "Enter the bank IBAN";
+        if (!form.bank.bankName?.trim()) return "Enter the bank name";
+        if (!form.bank.beneficiary?.trim()) return "Enter the bank beneficiary";
+      }
+      if (form.type === "reservation") {
+        if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras amount";
+      }
+      if (!form.price.notaryDate) return "Enter the completion date";
+    }
+    // Step 5: conditions are optional, but notary fields required
+    if (s === 5) {
+      if (!form.notary?.trim()) return "Enter the notary name";
+      if (!form.notaryLocation?.trim()) return "Enter the notary city";
+    }
+    return null;
+  };
+
   const go = (n) => {
-    if (n>1 && !form.type) { show("Select contract type","err"); return; }
+    // Only validate when going forward
+    if (n > step) {
+      const err = validate(step);
+      if (err) { show(err, "err"); return; }
+    }
     setStep(n);
   };
 
