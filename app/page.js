@@ -216,13 +216,13 @@ export default function App() {
     setGenState("idle");
   };
 
-  const generate = async () => {
+  const generate = async (format = "pdf") => {
     setGenState("generating");
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, format }),
       });
       if (!response.ok) throw new Error("Generation failed");
       const blob = await response.blob();
@@ -231,12 +231,13 @@ export default function App() {
       a.href = url;
       const type = form.type === "arras" ? "Arras" : "Reserva";
       const buyerName = form.buyer?.name?.replace(/\s+/g, "_") || "contract";
-      a.download = `${type}_${buyerName}_${form.date || new Date().toISOString().split("T")[0]}.pdf`;
+      const ext = format === "docx" ? "docx" : "pdf";
+      a.download = `${type}_${buyerName}_${form.date || new Date().toISOString().split("T")[0]}.${ext}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      show("Contract downloaded!", "ok");
+      show(`Contract downloaded as ${ext.toUpperCase()}!`, "ok");
     } catch (e) {
       show("Error generating contract. Please try again.", "err");
     }
@@ -410,8 +411,11 @@ export default function App() {
 
           <div style={{display:"flex",gap:12,marginTop:4}}>
             <button style={S.btnSec} onClick={()=>go(5)}>← Edit</button>
-            <button style={{...S.btnGen,opacity:genState==="generating"?0.6:1}} onClick={generate} disabled={genState==="generating"}>
-              {genState==="generating"?"⏳ Generating...":genState==="done"?"✅ Generated — Regenerate":selLangs.length>0?`📄 Generate Contract (ES + ${selLangs.map(l=>l.code.toUpperCase()).join(" + ")})`:"📄 Generate Contract (ES)"}
+            <button style={{...S.btnGen,opacity:genState==="generating"?0.6:1}} onClick={()=>generate("pdf")} disabled={genState==="generating"}>
+              {genState==="generating"?"⏳ Generating...":"📄 Download PDF"}
+            </button>
+            <button style={{...S.btnGen,background:"linear-gradient(135deg,#2a5a8c,#1A3A5C)",opacity:genState==="generating"?0.6:1}} onClick={()=>generate("docx")} disabled={genState==="generating"}>
+              {genState==="generating"?"⏳ Generating...":"📝 Download Word"}
             </button>
           </div>
           <button style={{...S.btnSec,marginTop:12,width:"100%"}} onClick={()=>{setForm(blank());setStep(1);setGenState("idle");setTranslatedCond("");}}>🔄 New Contract</button>

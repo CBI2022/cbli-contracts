@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateContract } from '@/lib/contract-generator';
+import { generateContractDocx } from '@/lib/contract-generator-docx';
 
 export async function POST(request) {
   try {
@@ -55,20 +56,30 @@ export async function POST(request) {
       }
     }
 
-    // Generate the PDF
-    const buffer = await generateContract({ ...formData, conditions: rewrittenConditions, translatedConditions });
-
-    // Return as downloadable file
+    const contractData = { ...formData, conditions: rewrittenConditions, translatedConditions };
     const buyerName = formData.buyer?.name?.replace(/\s+/g, '_') || 'contract';
     const type = formData.type === 'arras' ? 'Arras' : 'Reserva';
-    const filename = `${type}_${buyerName}_${new Date().toISOString().split('T')[0]}.pdf`;
+    const format = formData.format || 'pdf';
 
-    return new NextResponse(buffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-      },
-    });
+    if (format === 'docx') {
+      const buffer = await generateContractDocx(contractData);
+      const filename = `${type}_${buyerName}_${new Date().toISOString().split('T')[0]}.docx`;
+      return new NextResponse(buffer, {
+        headers: {
+          'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+        },
+      });
+    } else {
+      const buffer = await generateContract(contractData);
+      const filename = `${type}_${buyerName}_${new Date().toISOString().split('T')[0]}.pdf`;
+      return new NextResponse(buffer, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+        },
+      });
+    }
   } catch (error) {
     console.error('Contract generation error:', error);
     return NextResponse.json({ error: 'Failed to generate contract' }, { status: 500 });
