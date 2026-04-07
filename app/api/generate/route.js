@@ -78,7 +78,7 @@ export async function POST(request) {
     const langs = formData.languages?.length > 0 ? 'ES + ' + formData.languages.map(l => l.toUpperCase()).join(', ') : 'ES only';
 
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'CBLI Contracts <onboarding@resend.dev>',
+      from: 'CBLI Contracts <contracts@costablancainvestments.com>',
       to: ['legal@costablancainvestments.com'],
       subject: `New ${contractType} - ${formData.buyer?.name || 'Buyer'} - ${propertyInfo}`,
       html: `
