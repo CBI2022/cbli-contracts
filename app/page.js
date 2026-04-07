@@ -79,7 +79,7 @@ function numberToSpanishWords(n) {
 }
 
 const blank = () => ({
-  type: "", languages: [],
+  type: "", languages: [], agentName: "",
   date: new Date().toISOString().split("T")[0], city: "Altea",
   buyer: { title: "Don", name: "", nationality: "", idType: "pasaporte", idNumber: "", nie: "", address: "", hasPartner: false, partner: { title: "Doña", name: "", nationality: "", idType: "pasaporte", idNumber: "", nie: "" } },
   seller: { title: "Don", name: "", nationality: "", idType: "DNI", idNumber: "", nie: "", address: "", hasPartner: false, partner: { title: "Doña", name: "", nationality: "", idType: "DNI", idNumber: "", nie: "" } },
@@ -124,6 +124,7 @@ export default function App() {
   const validate = (s) => {
     if (s === 1) {
       if (!form.type) return "Select a contract type";
+      if (!form.agentName?.trim()) return "Enter your name";
       if (!form.date) return "Enter the date";
       if (!form.city?.trim()) return "Enter the city";
     }
@@ -280,6 +281,7 @@ export default function App() {
             {form.languages.length>1&&<div style={{...S.note,marginTop:12}}>📄 Contract will have {form.languages.length+1} language versions</div>}
           </Card>
 
+          <Card title="Agent"><F label="Your Name" path="agentName" form={form} set={set} ph="e.g. María, Bruno, Ana..."/></Card>
           <Card title="Date & Location"><Grid><F label="Date" path="date" type="date" form={form} set={set}/><F label="City" path="city" form={form} set={set} ph="Altea"/></Grid></Card>
           <Nav onNext={()=>go(2)}/>
         </>}

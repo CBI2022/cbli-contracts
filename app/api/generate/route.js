@@ -71,6 +71,7 @@ export async function POST(request) {
     // Send email with both attachments
     const resend = new Resend(process.env.RESEND_API_KEY);
 
+    const agentName = formData.agentName?.trim() || 'Unknown Agent';
     const propertyInfo = formData.property?.address || 'N/A';
     const priceInfo = formData.price?.total ? Number(formData.price.total).toLocaleString('es-ES') + ' EUR' : 'N/A';
     const sellerName = formData.seller?.name || 'N/A';
@@ -80,7 +81,7 @@ export async function POST(request) {
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: 'CBLI Contracts <contracts@costablancainvestments.com>',
       to: ['legal@costablancainvestments.com'],
-      subject: `New ${contractType} - ${formData.buyer?.name || 'Buyer'} - ${propertyInfo}`,
+      subject: `New ${contractType} - ${formData.buyer?.name || 'Buyer'} - by ${agentName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #000; padding: 20px; text-align: center;">
@@ -91,6 +92,7 @@ export async function POST(request) {
             <h2 style="color: #1A3A5C; margin-top: 0;">New Contract for Review</h2>
             <p style="color: #333; line-height: 1.6;">A new contract has been generated and requires your review. Both PDF and Word versions are attached.</p>
             <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+              <tr><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5; font-weight: bold; color: #1A3A5C; width: 140px;">Agent</td><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5; font-weight: bold;">${agentName}</td></tr>
               <tr><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5; font-weight: bold; color: #1A3A5C; width: 140px;">Contract Type</td><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5;">${contractType}</td></tr>
               <tr><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5; font-weight: bold; color: #1A3A5C;">Buyer</td><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5;">${formData.buyer?.name || 'N/A'}${formData.buyer?.hasPartner && formData.buyer?.partner?.name ? ' y ' + formData.buyer.partner.name : ''}</td></tr>
               <tr><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5; font-weight: bold; color: #1A3A5C;">Seller</td><td style="padding: 8px 12px; background: #fff; border: 1px solid #e0dcd5;">${sellerName}${formData.seller?.hasPartner && formData.seller?.partner?.name ? ' y ' + formData.seller.partner.name : ''}</td></tr>
