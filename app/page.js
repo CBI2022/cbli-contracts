@@ -85,7 +85,7 @@ const blank = () => ({
   seller: { title: "Don", name: "", nationality: "", idType: "DNI", idNumber: "", nie: "", address: "", hasPartner: false, partner: { title: "Doña", name: "", nationality: "", idType: "DNI", idNumber: "", nie: "" } },
   property: { type: "Villa", address: "", catastral: "", furniture: "included", registry: "", finca: "", tomo: "", libro: "", folio: "", ref: "" },
   price: { total: "", words: "", reservation: "", reservationDate: "", arras: "", arrasDeadline: "", remaining: "", notaryDate: "" },
-  commission: { totalCommission: "", firstPayment: "", firstPaymentIVA: "", secondPayment: "", secondPaymentIVA: "" },
+  commission: { totalCommission: "", totalIVA: "", totalWithIVA: "", firstPayment: "", firstPaymentIVA: "", secondPayment: "", secondPaymentIVA: "" },
   bank: { iban: "ES29 3045 2650 8810 2101 3669", bankName: "Caixa Rural de Altea", beneficiary: "COSTA BLANCA LUXURY INVESTMENTS SL" },
   conditions: "", notary: "Azpitarte", notaryLocation: "Altea", arrasSignDays: "7", arrasTransferDays: "3",
   extraProperties: [
@@ -116,6 +116,16 @@ export default function App() {
         n.price.remaining = String((parseFloat(n.price.total)||0)-(parseFloat(n.price.reservation)||0)-(parseFloat(n.price.arras)||0));
       }
       if (path==="price.total") n.price.words = numberToSpanishWords(val);
+      // Auto-calculate commission IVA fields
+      if (["commission.totalCommission","commission.firstPayment","commission.secondPayment"].includes(path)) {
+        const tc = parseFloat(n.commission.totalCommission) || 0;
+        const fp = parseFloat(n.commission.firstPayment) || 0;
+        const sp = parseFloat(n.commission.secondPayment) || 0;
+        n.commission.totalIVA = (tc * 0.21).toFixed(2);
+        n.commission.totalWithIVA = (tc * 1.21).toFixed(2);
+        n.commission.firstPaymentIVA = (fp * 1.21).toFixed(2);
+        n.commission.secondPaymentIVA = (sp * 1.21).toFixed(2);
+      }
       return n;
     });
   }, []);
@@ -358,10 +368,11 @@ export default function App() {
           </Card>
           {form.type==="commission"?<>
             <Card title="Commission Details">
-              <Note>Comisión total y desglose de pagos (50% en arras, 50% en notaría).</Note>
-              <Grid><F label="Total Commission (€)" path="commission.totalCommission" type="number" form={form} set={set} ph="30000"/><F label="Commission IVA 21% (€)" path="commission.firstPaymentIVA" type="number" form={form} set={set} ph="6300"/></Grid>
-              <Grid style={{marginTop:14}}><F label="First Payment (50% at arras) (€)" path="commission.firstPayment" type="number" form={form} set={set} ph="15000"/><RO label="First Payment IVA (€)" value={fmt(form.commission.firstPaymentIVA)}/></Grid>
-              <Grid style={{marginTop:14}}><F label="Second Payment (50% at notary) (€)" path="commission.secondPayment" type="number" form={form} set={set} ph="15000"/><RO label="Second Payment IVA (€)" value={fmt(form.commission.secondPaymentIVA)}/></Grid>
+              <Note>Comisión neta y desglose de pagos.</Note>
+              <Grid><F label="Total Commission Net (€)" path="commission.totalCommission" type="number" form={form} set={set} ph="30000"/><RO label="IVA 21% (auto)" value={form.commission.totalIVA ? fmt(form.commission.totalIVA) : "___€"}/></Grid>
+              {form.commission.totalCommission&&<div style={{...S.note,marginTop:12}}>✅ <strong>Total with IVA: {fmt(form.commission.totalWithIVA)}</strong></div>}
+              <Grid style={{marginTop:14}}><F label="First Payment Net (€)" path="commission.firstPayment" type="number" form={form} set={set} ph="15000"/><RO label="First Payment + IVA (auto)" value={form.commission.firstPaymentIVA && form.commission.firstPayment ? fmt(form.commission.firstPaymentIVA) : "___€"}/></Grid>
+              <Grid style={{marginTop:14}}><F label="Second Payment Net (€)" path="commission.secondPayment" type="number" form={form} set={set} ph="15000"/><RO label="Second Payment + IVA (auto)" value={form.commission.secondPaymentIVA && form.commission.secondPayment ? fmt(form.commission.secondPaymentIVA) : "___€"}/></Grid>
             </Card>
             <Card title="Commission Bank"><Note>Default CBLI bank for commission transfers.</Note><Grid>
               <F label="IBAN" path="bank.iban" form={form} set={set} ph="ES29 3045 2650 8810 2101 3669"/>
@@ -409,8 +420,10 @@ export default function App() {
                 ["Buyer",buyerFull()],["Seller",sellerFull()],
                 ["Property",form.property.type+" — "+(form.property.address||"—")],
                 ["Ref",form.property.ref || "—"],
-                ["Sale Price",fmt(form.price.total)],["Commission",fmt(form.commission.totalCommission)],
-                ["First Payment (50%)",fmt(form.commission.firstPayment)],["Second Payment (50%)",fmt(form.commission.secondPayment)],
+                ["Sale Price",fmt(form.price.total)],["Commission Net",fmt(form.commission.totalCommission)],
+                ["Commission + IVA",fmt(form.commission.totalWithIVA)],
+                ["First Payment",fmt(form.commission.firstPayment)+" (+ IVA: "+fmt(form.commission.firstPaymentIVA)+")"],
+                ["Second Payment",fmt(form.commission.secondPayment)+" (+ IVA: "+fmt(form.commission.secondPaymentIVA)+")"],
                 ["Date",fmtDate(form.date)+", "+form.city],
               ]
               :[["Type",form.type==="arras"?"Contrato de Arras":"Contrato de Reserva"],
