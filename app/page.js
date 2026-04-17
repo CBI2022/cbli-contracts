@@ -85,7 +85,8 @@ const blank = () => ({
   seller: { title: "Don", name: "", nationality: "", idType: "DNI", idNumber: "", nie: "", address: "", hasPartner: false, partner: { title: "Doña", name: "", nationality: "", idType: "DNI", idNumber: "", nie: "" } },
   property: { type: "Villa", address: "", catastral: "", furniture: "included", registry: "", finca: "", tomo: "", libro: "", folio: "", ref: "" },
   price: { total: "", words: "", reservation: "", reservationDate: "", arras: "", arrasDeadline: "", remaining: "", notaryDate: "" },
-  bank: { iban: "", bankName: "", beneficiary: "" },
+  commission: { totalCommission: "", firstPayment: "", firstPaymentIVA: "", secondPayment: "", secondPaymentIVA: "" },
+  bank: { iban: "ES29 3045 2650 8810 2101 3669", bankName: "Caixa Rural de Altea", beneficiary: "COSTA BLANCA LUXURY INVESTMENTS SL" },
   conditions: "", notary: "Azpitarte", notaryLocation: "Altea", arrasSignDays: "7", arrasTransferDays: "3",
   extraProperties: [
     { enabled: false, type: "Aparcamiento", catastral: "", finca: "", tomo: "", libro: "", folio: "" },
@@ -170,20 +171,31 @@ export default function App() {
       }
     }
     if (s === 4) {
-      if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total price";
-      if (!form.price.reservation || parseFloat(form.price.reservation) <= 0) return "Enter the reservation amount";
-      if (!form.price.reservationDate) return "Enter the reservation date";
-      if (form.type === "arras") {
-        if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras deposit amount";
-        if (!form.price.arrasDeadline) return "Enter the arras deadline";
+      if (form.type === "commission") {
+        if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total sale price";
+        if (!form.commission.totalCommission || parseFloat(form.commission.totalCommission) <= 0) return "Enter the total commission amount";
+        if (!form.commission.firstPayment || parseFloat(form.commission.firstPayment) <= 0) return "Enter the first payment amount";
+        if (!form.commission.secondPayment || parseFloat(form.commission.secondPayment) <= 0) return "Enter the second payment amount";
+        if (!form.commission.firstPaymentIVA || parseFloat(form.commission.firstPaymentIVA) < 0) return "Enter the IVA amount";
         if (!form.bank.iban?.trim()) return "Enter the bank IBAN";
         if (!form.bank.bankName?.trim()) return "Enter the bank name";
         if (!form.bank.beneficiary?.trim()) return "Enter the bank beneficiary";
+      } else {
+        if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total price";
+        if (!form.price.reservation || parseFloat(form.price.reservation) <= 0) return "Enter the reservation amount";
+        if (!form.price.reservationDate) return "Enter the reservation date";
+        if (form.type === "arras") {
+          if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras deposit amount";
+          if (!form.price.arrasDeadline) return "Enter the arras deadline";
+          if (!form.bank.iban?.trim()) return "Enter the bank IBAN";
+          if (!form.bank.bankName?.trim()) return "Enter the bank name";
+          if (!form.bank.beneficiary?.trim()) return "Enter the bank beneficiary";
+        }
+        if (form.type === "reservation") {
+          if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras amount";
+        }
+        if (!form.price.notaryDate) return "Enter the completion date";
       }
-      if (form.type === "reservation") {
-        if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras amount";
-      }
-      if (!form.price.notaryDate) return "Enter the completion date";
     }
     // Step 5: conditions are optional, but notary fields required
     if (s === 5) {
@@ -243,7 +255,7 @@ export default function App() {
       <header style={S.header}><div style={S.headerInner}>
         <div/>
         <img src="/logo.png" alt="CBLI" style={{height:110,objectFit:"contain",position:"absolute",left:"50%",transform:"translateX(-50%)"}}/>
-        <div style={S.headerRight}>{form.type&&<span style={S.badge}>{form.type==="arras"?"ARRAS":"RESERVA"}</span>}{selLangs.map(l=><span key={l.code} style={S.badge}>{l.flag}</span>)}</div>
+        <div style={S.headerRight}>{form.type&&<span style={S.badge}>{form.type==="arras"?"ARRAS":form.type==="commission"?"HONORARIOS":"RESERVA"}</span>}{selLangs.map(l=><span key={l.code} style={S.badge}>{l.flag}</span>)}</div>
       </div></header>
 
       <div style={S.stepsOuter}><div style={S.stepsInner}>
@@ -260,7 +272,8 @@ export default function App() {
         {step===1&&<>
           <Card title="Contract Type"><div style={S.typeRow}>
             {[{t:"reservation",icon:"📋",name:"Contrato de Reserva",desc:"Initial reservation — non-refundable deposit held by CBLI"},
-              {t:"arras",icon:"📑",name:"Contrato de Arras",desc:"Binding deposit — arras penitenciales (Art. 1.454 CC)"}
+              {t:"arras",icon:"📑",name:"Contrato de Arras",desc:"Binding deposit — arras penitenciales (Art. 1.454 CC)"},
+              {t:"commission",icon:"💼",name:"Reconocimiento de Honorarios",desc:"Commission agreement between seller and CBLI"}
             ].map(c=>(
               <div key={c.t} style={S.typeCard(form.type===c.t)} onClick={()=>set("type",c.t)}>
                 <div style={{fontSize:28,marginBottom:6}}>{c.icon}</div>
@@ -306,8 +319,8 @@ export default function App() {
             <F label="Libro" path="property.libro" form={form} set={set} ph="567"/>
             <F label="Folio" path="property.folio" form={form} set={set} ph="89"/>
           </Grid></Card>
-          <Card title="Furniture"><F label="Furniture included?" path="property.furniture" options={[{value:"included",label:"Yes — furniture & appliances included"},{value:"not_included",label:"No — not included"},{value:"partial",label:"Partial — per inventory list"}]} form={form} set={set}/></Card>
-          <Card title="Additional Properties">
+          {form.type!=="commission"&&<Card title="Furniture"><F label="Furniture included?" path="property.furniture" options={[{value:"included",label:"Yes — furniture & appliances included"},{value:"not_included",label:"No — not included"},{value:"partial",label:"Partial — per inventory list"}]} form={form} set={set}/></Card>}
+          {form.type!=="commission"&&<Card title="Additional Properties">
             <Note>Check if the sale includes a parking space or storage room.</Note>
             {form.extraProperties.map((ep, idx) => (
               <div key={idx}>
@@ -328,7 +341,7 @@ export default function App() {
                 )}
               </div>
             ))}
-          </Card>
+          </Card>}
           <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
         </>}
 
@@ -343,26 +356,41 @@ export default function App() {
             </Grid>
             {form.price.words&&<div style={{...S.note,marginTop:12}}>✅ <strong>{form.price.words} EUROS</strong> ({fmt(form.price.total)})</div>}
           </Card>
-          <Card title="Payment Breakdown">
-            <Note>Define the payment schedule for this transaction.</Note>
-            <Grid><F label="Reservation (€)" path="price.reservation" type="number" form={form} set={set} ph="10000"/><F label="Reservation Date" path="price.reservationDate" type="date" form={form} set={set}/></Grid>
-            {form.type==="arras"&&<Grid style={{marginTop:14}}><F label="Arras Deposit (€)" path="price.arras" type="number" form={form} set={set} ph="35000"/><F label="Arras Deadline" path="price.arrasDeadline" type="date" form={form} set={set}/></Grid>}
-            {form.type==="reservation"&&<Grid style={{marginTop:14}}><F label="Arras for future contract (€)" path="price.arras" type="number" form={form} set={set} ph="32000"/><RO label="Remaining (€)" value={fmt(form.price.remaining)}/></Grid>}
-            <Grid style={{marginTop:14}}>{form.type==="arras"&&<RO label="Remaining at Notary (€)" value={fmt(form.price.remaining)}/>}<F label="Completion Date" path="price.notaryDate" type="date" form={form} set={set}/></Grid>
-          </Card>
-          {form.type==="arras"&&<Card title="Seller's Bank"><Note>For arras and final payment transfers.</Note><Grid>
-            <F label="IBAN" path="bank.iban" form={form} set={set} ph="ES12 3456 7890..."/>
-            <F label="Bank" path="bank.bankName" form={form} set={set} ph="Banco Sabadell"/>
-            <F label="Beneficiary" path="bank.beneficiary" form={form} set={set} full ph="Seller name or company"/>
-          </Grid></Card>}
-          {form.type==="reservation"&&<Card title="Arras Timeline"><Note>Days to sign arras after reservation.</Note><Grid>
-            <F label="Days to sign arras" path="arrasSignDays" type="number" form={form} set={set}/>
-            <F label="Days to transfer" path="arrasTransferDays" type="number" form={form} set={set}/>
-          </Grid></Card>}
-          <Nav onBack={()=>go(3)} onNext={()=>go(5)}/>
+          {form.type==="commission"?<>
+            <Card title="Commission Details">
+              <Note>Comisión total y desglose de pagos (50% en arras, 50% en notaría).</Note>
+              <Grid><F label="Total Commission (€)" path="commission.totalCommission" type="number" form={form} set={set} ph="30000"/><F label="Commission IVA 21% (€)" path="commission.firstPaymentIVA" type="number" form={form} set={set} ph="6300"/></Grid>
+              <Grid style={{marginTop:14}}><F label="First Payment (50% at arras) (€)" path="commission.firstPayment" type="number" form={form} set={set} ph="15000"/><RO label="First Payment IVA (€)" value={fmt(form.commission.firstPaymentIVA)}/></Grid>
+              <Grid style={{marginTop:14}}><F label="Second Payment (50% at notary) (€)" path="commission.secondPayment" type="number" form={form} set={set} ph="15000"/><RO label="Second Payment IVA (€)" value={fmt(form.commission.secondPaymentIVA)}/></Grid>
+            </Card>
+            <Card title="Commission Bank"><Note>Default CBLI bank for commission transfers.</Note><Grid>
+              <F label="IBAN" path="bank.iban" form={form} set={set} ph="ES29 3045 2650 8810 2101 3669"/>
+              <F label="Bank" path="bank.bankName" form={form} set={set} ph="Caixa Rural de Altea"/>
+              <F label="Beneficiary" path="bank.beneficiary" form={form} set={set} full ph="COSTA BLANCA LUXURY INVESTMENTS SL"/>
+            </Grid></Card>
+            <Nav onBack={()=>go(3)} onNext={()=>go(6)}/>
+          </>:<>
+            <Card title="Payment Breakdown">
+              <Note>Define the payment schedule for this transaction.</Note>
+              <Grid><F label="Reservation (€)" path="price.reservation" type="number" form={form} set={set} ph="10000"/><F label="Reservation Date" path="price.reservationDate" type="date" form={form} set={set}/></Grid>
+              {form.type==="arras"&&<Grid style={{marginTop:14}}><F label="Arras Deposit (€)" path="price.arras" type="number" form={form} set={set} ph="35000"/><F label="Arras Deadline" path="price.arrasDeadline" type="date" form={form} set={set}/></Grid>}
+              {form.type==="reservation"&&<Grid style={{marginTop:14}}><F label="Arras for future contract (€)" path="price.arras" type="number" form={form} set={set} ph="32000"/><RO label="Remaining (€)" value={fmt(form.price.remaining)}/></Grid>}
+              <Grid style={{marginTop:14}}>{form.type==="arras"&&<RO label="Remaining at Notary (€)" value={fmt(form.price.remaining)}/>}<F label="Completion Date" path="price.notaryDate" type="date" form={form} set={set}/></Grid>
+            </Card>
+            {form.type==="arras"&&<Card title="Seller's Bank"><Note>For arras and final payment transfers.</Note><Grid>
+              <F label="IBAN" path="bank.iban" form={form} set={set} ph="ES12 3456 7890..."/>
+              <F label="Bank" path="bank.bankName" form={form} set={set} ph="Banco Sabadell"/>
+              <F label="Beneficiary" path="bank.beneficiary" form={form} set={set} full ph="Seller name or company"/>
+            </Grid></Card>}
+            {form.type==="reservation"&&<Card title="Arras Timeline"><Note>Days to sign arras after reservation.</Note><Grid>
+              <F label="Days to sign arras" path="arrasSignDays" type="number" form={form} set={set}/>
+              <F label="Days to transfer" path="arrasTransferDays" type="number" form={form} set={set}/>
+            </Grid></Card>}
+            <Nav onBack={()=>go(3)} onNext={()=>go(5)}/>
+          </>}
         </>}
 
-        {step===5&&<>
+        {form.type!=="commission"&&step===5&&<>
           <Card title="Special Conditions">
             <Note>Write in Spanish. AI translates to {selLangs.map(l=>l.name).join(", ")||"selected languages"} automatically.</Note>
             <F label="Condiciones Especiales" path="conditions" type="textarea" form={form} set={set} ph="e.g. La venta incluye plaza de garaje y trastero..."/>
@@ -375,17 +403,28 @@ export default function App() {
           <div style={S.banner}>⚡ <strong>Review all details.</strong> Click Generate to create the PDF contract.</div>
 
           <Card title="Deal Summary"><div style={S.sumGrid}>
-            {[["Type",form.type==="arras"?"Contrato de Arras":"Contrato de Reserva"],
-              ["Languages", selLangs.length > 0 ? "🇪🇸 ES + "+selLangs.map(l=>l.flag+" "+l.code.toUpperCase()).join(" + ") : "🇪🇸 Spanish only"],
-              ["Buyer",buyerFull()],["Seller",sellerFull()],
-              ["Property",form.property.type+" — "+(form.property.address||"—")],
-              ["Ref",form.property.ref || "—"],
-              ["Catastral",form.property.catastral||"—"],
-              ["Price",fmt(form.price.total)],["In Words",(form.price.words||"—")+" EUROS"],
-              ["Reservation",fmt(form.price.reservation)],["Arras",fmt(form.price.arras)],
-              ["Remaining",fmt(form.price.remaining)],["Completion",fmtDate(form.price.notaryDate)],
-              ["Notary",form.notary+" ("+form.notaryLocation+")"],["Date",fmtDate(form.date)+", "+form.city],
-            ].map(([l,v],i)=>(<div key={i} style={S.sumItem}><div style={S.sumL}>{l}</div><div style={S.sumV}>{v}</div></div>))}
+            {(form.type==="commission"?
+              [["Type","Reconocimiento de Honorarios"],
+                ["Languages", selLangs.length > 0 ? "🇪🇸 ES + "+selLangs.map(l=>l.flag+" "+l.code.toUpperCase()).join(" + ") : "🇪🇸 Spanish only"],
+                ["Buyer",buyerFull()],["Seller",sellerFull()],
+                ["Property",form.property.type+" — "+(form.property.address||"—")],
+                ["Ref",form.property.ref || "—"],
+                ["Sale Price",fmt(form.price.total)],["Commission",fmt(form.commission.totalCommission)],
+                ["First Payment (50%)",fmt(form.commission.firstPayment)],["Second Payment (50%)",fmt(form.commission.secondPayment)],
+                ["Date",fmtDate(form.date)+", "+form.city],
+              ]
+              :[["Type",form.type==="arras"?"Contrato de Arras":"Contrato de Reserva"],
+                ["Languages", selLangs.length > 0 ? "🇪🇸 ES + "+selLangs.map(l=>l.flag+" "+l.code.toUpperCase()).join(" + ") : "🇪🇸 Spanish only"],
+                ["Buyer",buyerFull()],["Seller",sellerFull()],
+                ["Property",form.property.type+" — "+(form.property.address||"—")],
+                ["Ref",form.property.ref || "—"],
+                ["Catastral",form.property.catastral||"—"],
+                ["Price",fmt(form.price.total)],["In Words",(form.price.words||"—")+" EUROS"],
+                ["Reservation",fmt(form.price.reservation)],["Arras",fmt(form.price.arras)],
+                ["Remaining",fmt(form.price.remaining)],["Completion",fmtDate(form.price.notaryDate)],
+                ["Notary",form.notary+" ("+form.notaryLocation+")"],["Date",fmtDate(form.date)+", "+form.city],
+              ]
+            ).map(([l,v],i)=>(<div key={i} style={S.sumItem}><div style={S.sumL}>{l}</div><div style={S.sumV}>{v}</div></div>))}
           </div></Card>
 
           <Card title="Buyer Details">
