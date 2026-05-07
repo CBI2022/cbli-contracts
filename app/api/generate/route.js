@@ -1,3 +1,4 @@
+// v2 — force Vercel rebuild
 import { NextResponse } from 'next/server';
 import { generateContract } from '@/lib/contract-generator';
 import { generateContractDocx } from '@/lib/contract-generator-docx';
