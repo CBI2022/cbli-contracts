@@ -195,8 +195,10 @@ export default function App() {
         if (!form.bank.beneficiary?.trim()) return "Enter the bank beneficiary";
       } else {
         if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total price";
-        if (!form.price.reservation || parseFloat(form.price.reservation) <= 0) return "Enter the reservation amount";
-        if (!form.price.reservationDate) return "Enter the reservation date";
+        if (form.type === "reservation") {
+          if (!form.price.reservation || parseFloat(form.price.reservation) <= 0) return "Enter the reservation amount";
+          if (!form.price.reservationDate) return "Enter the reservation date";
+        }
         if (form.type === "arras") {
           if (!form.price.arras || parseFloat(form.price.arras) <= 0) return "Enter the arras deposit amount";
           if (!form.price.arrasDeadline) return "Enter the arras deadline";
