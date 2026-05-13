@@ -187,8 +187,13 @@ export default function App() {
       if (form.type === "commission") {
         if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total sale price";
         if (!form.commission.totalCommission || parseFloat(form.commission.totalCommission) <= 0) return "Enter the total commission amount";
-        if (!form.commission.firstPayment || parseFloat(form.commission.firstPayment) <= 0) return "Enter the first payment amount";
+        if (form.commission.firstPayment === '' || form.commission.firstPayment === undefined) return "Enter the first payment amount (can be 0)";
         if (!form.commission.secondPayment || parseFloat(form.commission.secondPayment) <= 0) return "Enter the second payment amount";
+        const fp = parseFloat(form.commission.firstPayment) || 0;
+        const sp = parseFloat(form.commission.secondPayment) || 0;
+        const tc = parseFloat(form.commission.totalCommission) || 0;
+        const disc = parseFloat(form.commission.discount) || 0;
+        if (Math.abs((fp + sp) - (tc - disc)) > 0.01) return `First + Second payment (${(fp+sp).toFixed(2)}) must equal Total Commission Net (${(tc-disc).toFixed(2)})`;
         if (!form.commission.firstPaymentIVA || parseFloat(form.commission.firstPaymentIVA) < 0) return "Enter the IVA amount";
         if (!form.bank.iban?.trim()) return "Enter the bank IBAN";
         if (!form.bank.bankName?.trim()) return "Enter the bank name";
