@@ -195,9 +195,6 @@ export default function App() {
         const disc = parseFloat(form.commission.discount) || 0;
         if (Math.abs((fp + sp) - (tc - disc)) > 0.01) return `First + Second payment (${(fp+sp).toFixed(2)}) must equal Total Commission Net (${(tc-disc).toFixed(2)})`;
         if (!form.commission.firstPaymentIVA || parseFloat(form.commission.firstPaymentIVA) < 0) return "Enter the IVA amount";
-        if (!form.bank.iban?.trim()) return "Enter the bank IBAN";
-        if (!form.bank.bankName?.trim()) return "Enter the bank name";
-        if (!form.bank.beneficiary?.trim()) return "Enter the bank beneficiary";
       } else {
         if (!form.price.total || parseFloat(form.price.total) <= 0) return "Enter the total price";
         if (form.type === "reservation") {
@@ -392,11 +389,6 @@ export default function App() {
               <Grid><F label="First Payment Net (€)" path="commission.firstPayment" type="number" form={form} set={set} ph="15000"/><RO label="First Payment + IVA (auto)" value={form.commission.firstPaymentIVA && form.commission.firstPayment ? fmt(form.commission.firstPaymentIVA) : "___€"}/></Grid>
               <Grid style={{marginTop:14}}><F label="Second Payment Net (€)" path="commission.secondPayment" type="number" form={form} set={set} ph="15000"/><RO label="Second Payment + IVA (auto)" value={form.commission.secondPaymentIVA && form.commission.secondPayment ? fmt(form.commission.secondPaymentIVA) : "___€"}/></Grid>
             </Card>
-            <Card title="Commission Bank"><Note>Default CBLI bank for commission transfers.</Note><Grid>
-              <F label="IBAN" path="bank.iban" form={form} set={set} ph="ES29 3045 2650 8810 2101 3669"/>
-              <F label="Bank" path="bank.bankName" form={form} set={set} ph="Caixa Rural de Altea"/>
-              <F label="Beneficiary" path="bank.beneficiary" form={form} set={set} full ph="COSTA BLANCA LUXURY INVESTMENTS SL"/>
-            </Grid></Card>
             <Nav onBack={()=>go(3)} onNext={()=>go(6)}/>
           </>:<>
             <Card title="Payment Breakdown">
