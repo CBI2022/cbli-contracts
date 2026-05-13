@@ -396,7 +396,7 @@ export default function App() {
           </>:<>
             <Card title="Payment Breakdown">
               <Note>Define the payment schedule for this transaction.</Note>
-              <Grid><F label="Reservation (€)" path="price.reservation" type="number" form={form} set={set} ph="10000"/><F label="Reservation Date" path="price.reservationDate" type="date" form={form} set={set}/></Grid>
+              <Grid><F label={form.type==="arras"?"Reservation (€) - optional":"Reservation (€)"} path="price.reservation" type="number" form={form} set={set} ph="10000"/><F label={form.type==="arras"?"Reservation Date - optional":"Reservation Date"} path="price.reservationDate" type="date" form={form} set={set}/></Grid>
               {form.type==="arras"&&<Grid style={{marginTop:14}}><F label="Arras Deposit (€)" path="price.arras" type="number" form={form} set={set} ph="35000"/><F label="Arras Deadline" path="price.arrasDeadline" type="date" form={form} set={set}/></Grid>}
               {form.type==="reservation"&&<Grid style={{marginTop:14}}><F label="Arras for future contract (€)" path="price.arras" type="number" form={form} set={set} ph="32000"/><RO label="Remaining (€)" value={fmt(form.price.remaining)}/></Grid>}
               <Grid style={{marginTop:14}}>{form.type==="arras"&&<RO label="Remaining at Notary (€)" value={fmt(form.price.remaining)}/>}<F label="Completion Date" path="price.notaryDate" type="date" form={form} set={set}/></Grid>
