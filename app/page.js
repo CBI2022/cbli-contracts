@@ -115,7 +115,7 @@ const blank = () => ({
     { enabled: false, type: "Trastero", catastral: "", finca: "", tomo: "", libro: "", folio: "" },
   ],
   ficha: {
-    price: "", agent: "", address: "", city: "", owner: "", phone: "", propertyType: "Villa", date: "", commissionRate: "",
+    price: "", agent: "", address: "", city: "", owner: "", phone: "", propertyType: "Villa", date: "", commissionRate: "", ivaIncluded: false,
     ibi: "", community: "", garbage: "", water: "", electricity: "",
     plotM2: "", surfaceBuilt: "", builtYear: "", orientation: "", floors: "", timeOnMarket: "",
     bedrooms: "", bathrooms: "", toilets: "", heating: "", parkings: "", refurbishedYear: "",
@@ -186,16 +186,25 @@ export default function App() {
       }
       if (s === 3) {
         if (!form.ficha.price?.trim()) return "Enter property price";
+        if (!form.ficha.plotM2?.trim()) return "Enter plot size";
+        if (!form.ficha.surfaceBuilt?.trim()) return "Enter surface built";
+        if (!form.ficha.builtYear?.trim()) return "Select year built";
+        if (!form.ficha.orientation?.trim()) return "Select orientation";
+        if (!form.ficha.floors?.trim()) return "Select number of floors";
+        if (!form.ficha.bedrooms?.trim()) return "Select number of bedrooms";
+        if (!form.ficha.bathrooms?.trim()) return "Select number of bathrooms";
+        if (!form.ficha.heating?.trim()) return "Select heating type";
+        if (!form.ficha.parkings?.trim()) return "Select number of parkings";
       }
       if (s === 4) {
-        // File validation for required documents
-        const requiredDocs = ['ibi', 'garbage', 'dniPassports', 'escritura'];
+        // File validation — only ID/Passport and Contract of Sale required
+        const requiredDocs = ['dniPassports', 'contract'];
         const missingRequired = requiredDocs.filter(docType => {
           const hasFile = form.fichaFiles.some(f => f.type === docType);
           return !hasFile;
         });
         if (missingRequired.length > 0) {
-          const docNames = { ibi: 'IBI', garbage: 'Garbage', dniPassports: 'ID/Passport', escritura: 'Escritura' };
+          const docNames = { dniPassports: 'ID/Passport Seller', contract: 'Contract of Sale' };
           return `Missing required documents: ${missingRequired.map(d => docNames[d]).join(', ')}`;
         }
       }
@@ -408,6 +417,10 @@ export default function App() {
               </Grid>
               <Grid style={{marginTop:14}}>
                 <F label="Commission Rate (%)" path="ficha.commissionRate" form={form} set={set} ph="5%"/>
+                <div style={{display:"flex",alignItems:"center",gap:8,paddingTop:22}}>
+                  <input type="checkbox" checked={form.ficha?.ivaIncluded||false} onChange={e=>set("ficha.ivaIncluded",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
+                  <label style={{fontSize:13,cursor:"pointer"}}>IVA 21% included</label>
+                </div>
               </Grid>
             </Card>
             <Nav onBack={()=>go(1)} onNext={()=>go(3)}/>
@@ -489,16 +502,16 @@ export default function App() {
             <Grid>
               <F label="Plot Size (m²)" path="ficha.plotM2" type="number" form={form} set={set} ph="800"/>
               <F label="Surface Built (m²)" path="ficha.surfaceBuilt" type="number" form={form} set={set} ph="250"/>
-              <F label="Year Built" path="ficha.builtYear" form={form} set={set} ph="2005"/>
-              <F label="Orientation" path="ficha.orientation" form={form} set={set} ph="South"/>
-              <F label="Floors" path="ficha.floors" type="number" form={form} set={set} ph="2"/>
+              <F label="Year Built" path="ficha.builtYear" options={[...Array(60)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))} form={form} set={set}/>
+              <F label="Orientation" path="ficha.orientation" options={[{value:"North",label:"North"},{value:"South",label:"South"},{value:"East",label:"East"},{value:"West",label:"West"},{value:"North-East",label:"North-East"},{value:"North-West",label:"North-West"},{value:"South-East",label:"South-East"},{value:"South-West",label:"South-West"}]} form={form} set={set}/>
+              <F label="Floors" path="ficha.floors" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/>
               <F label="Time on Market" path="ficha.timeOnMarket" form={form} set={set} ph="3 months"/>
-              <F label="Bedrooms" path="ficha.bedrooms" type="number" form={form} set={set} ph="3"/>
-              <F label="Bathrooms" path="ficha.bathrooms" type="number" form={form} set={set} ph="2"/>
-              <F label="Toilets" path="ficha.toilets" type="number" form={form} set={set} ph="1"/>
-              <F label="Heating" path="ficha.heating" form={form} set={set} ph="Central"/>
-              <F label="Parkings" path="ficha.parkings" type="number" form={form} set={set} ph="2"/>
-              <F label="Refurbished Year" path="ficha.refurbishedYear" form={form} set={set} ph="2020"/>
+              <F label="Bedrooms" path="ficha.bedrooms" options={[{value:"0",label:"0 (Studio)"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5",label:"5"},{value:"6+",label:"6+"}]} form={form} set={set}/>
+              <F label="Bathrooms" path="ficha.bathrooms" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/>
+              <F label="Toilets (optional)" path="ficha.toilets" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3+",label:"3+"}]} form={form} set={set}/>
+              <F label="Heating" path="ficha.heating" options={[{value:"Central",label:"Central"},{value:"Splits",label:"Splits"},{value:"Central + Splits",label:"Central + Splits"},{value:"None",label:"None"}]} form={form} set={set}/>
+              <F label="Parkings" path="ficha.parkings" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4+",label:"4+"}]} form={form} set={set}/>
+              <F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/>
             </Grid>
           </Card>
 
@@ -511,7 +524,7 @@ export default function App() {
               <F label="Covered Garage" path="ficha.coveredGarage" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Guest Apartment" path="ficha.guestApartment" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"Nuevos",label:"Nuevos (New)"},{value:"Viejos",label:"Viejos (Old)"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"}]} form={form} set={set}/>
               <F label="Furniture Included" path="ficha.furnitureIncluded" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Lift" path="ficha.lift" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Garden" path="ficha.garden" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
@@ -604,43 +617,26 @@ export default function App() {
 
         {form.type==="ficha"&&step===4&&<>
           <Card title="Upload Documents">
-            <Note>Upload required property documents for the listing.</Note>
+            <Note>Upload or take a photo of property documents. On mobile, tap "Take Photo" to use your camera.</Note>
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
-              <div>
-                <label style={S.fLabel}>IBI (Property Tax) - Required</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="ibi"),{type:"ibi",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="ibi")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="ibi").name}</div>}
-              </div>
-              <div>
-                <label style={S.fLabel}>Garbage / Basura - Required</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="garbage"),{type:"garbage",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="garbage")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="garbage").name}</div>}
-              </div>
-              <div>
-                <label style={S.fLabel}>Community / Comunidad - Optional</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="community"),{type:"community",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="community")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="community").name}</div>}
-              </div>
-              <div>
-                <label style={S.fLabel}>ID/Passport Seller - Required</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="dniPassports"),{type:"dniPassports",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="dniPassports")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="dniPassports").name}</div>}
-              </div>
-              <div>
-                <label style={S.fLabel}>Contract of Sale - Required</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="contract"),{type:"contract",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="contract")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="contract").name}</div>}
-              </div>
-              <div>
-                <label style={S.fLabel}>Escritura (Purchase Deed) - Required</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="escritura"),{type:"escritura",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="escritura")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="escritura").name}</div>}
-              </div>
-              <div>
-                <label style={S.fLabel}>Water/Electricity/Gas Invoice - Optional</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!=="invoice"),{type:"invoice",name:f.name,file:f}])}} style={{...S.input,cursor:"pointer"}}/>
-                {form.fichaFiles.find(x=>x.type==="invoice")&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type==="invoice").name}</div>}
-              </div>
+              {[
+                {type:"dniPassports",label:"ID/Passport Seller",req:true},
+                {type:"contract",label:"Contract of Sale",req:true},
+                {type:"ibi",label:"IBI (Property Tax)",req:false},
+                {type:"garbage",label:"Garbage / Basura",req:false},
+                {type:"community",label:"Community / Comunidad",req:false},
+                {type:"escritura",label:"Escritura (Purchase Deed)",req:false},
+                {type:"invoice",label:"Water/Electricity/Gas Invoice",req:false},
+              ].map(doc=>(
+                <div key={doc.type}>
+                  <label style={S.fLabel}>{doc.label}{doc.req?" - Required":" - Optional"}</label>
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])}} style={{...S.input,flex:1,cursor:"pointer"}}/>
+                    <button type="button" onClick={()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';inp.onchange=e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])};inp.click()}} style={{padding:"8px 12px",background:"#1A3A5C",color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}>📷 Take Photo</button>
+                  </div>
+                  {form.fichaFiles.find(x=>x.type===doc.type)&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type===doc.type).name}</div>}
+                </div>
+              ))}
             </div>
           </Card>
           <Nav onBack={()=>go(3)} onNext={()=>go(5)}/>
