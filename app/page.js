@@ -78,6 +78,28 @@ function numberToSpanishWords(n) {
   return below1000(n);
 }
 
+function numberToEnglishWords(n) {
+  if (!n || isNaN(n)) return "";
+  n = Math.floor(Number(n));
+  if (n === 0) return "ZERO";
+  const units = ["","ONE","TWO","THREE","FOUR","FIVE","SIX","SEVEN","EIGHT","NINE"];
+  const teens = ["TEN","ELEVEN","TWELVE","THIRTEEN","FOURTEEN","FIFTEEN","SIXTEEN","SEVENTEEN","EIGHTEEN","NINETEEN"];
+  const tens = ["","TEN","TWENTY","THIRTY","FORTY","FIFTY","SIXTY","SEVENTY","EIGHTY","NINETY"];
+  function below1000(x) {
+    if (x === 0) return "";
+    let r = "";
+    if (x >= 100) { r += units[Math.floor(x/100)] + " HUNDRED "; x %= 100; }
+    if (x >= 20) { const t = Math.floor(x/10), u = x%10; r += tens[t]; if (u > 0) r += "-" + units[u]; }
+    else if (x >= 10) r += teens[x-10];
+    else if (x > 0) r += units[x];
+    return r.trim();
+  }
+  if (n >= 1000000) { const m = Math.floor(n/1000000), rest = n%1000000; let r = below1000(m) + " MILLION"; if (rest > 0) r += " " + numberToEnglishWords(rest); return r; }
+  if (n >= 1000) { const t = Math.floor(n/1000), rest = n%1000; let r = below1000(t) + " THOUSAND"; if (rest > 0) r += " " + below1000(rest); return r; }
+  return below1000(n);
+}
+const fmtWords = (v) => v ? numberToEnglishWords(Math.floor(Number(v))) + " EUROS" : "";
+
 const blank = () => ({
   type: "", languages: [], agentName: "",
   date: new Date().toISOString().split("T")[0], city: "Altea",
@@ -93,7 +115,7 @@ const blank = () => ({
     { enabled: false, type: "Trastero", catastral: "", finca: "", tomo: "", libro: "", folio: "" },
   ],
   ficha: {
-    price: "", agent: "", address: "", city: "", owner: "", phone: "", propertyType: "Villa", date: "",
+    price: "", agent: "", address: "", city: "", owner: "", phone: "", propertyType: "Villa", date: "", commissionRate: "",
     ibi: "", community: "", garbage: "", water: "", electricity: "",
     plotM2: "", surfaceBuilt: "", builtYear: "", orientation: "", floors: "", timeOnMarket: "",
     bedrooms: "", bathrooms: "", toilets: "", heating: "", parkings: "", refurbishedYear: "",
@@ -331,7 +353,7 @@ export default function App() {
       </div></header>
 
       <div style={S.stepsOuter}><div style={S.stepsInner}>
-        {(form.type==="ficha"?["Type","Agent","Owner","Property","Documents","Review"]:["Contract","Parties","Property","Price","Conditions","Generate"]).map((s,i)=>(
+        {(form.type==="ficha"?["Type","Seller","Owner","Property","Documents","Review"]:["Contract","Parties","Property","Price","Conditions","Generate"]).map((s,i)=>(
           <div key={i} style={S.step(step===i+1,step>i+1)} onClick={()=>go(i+1)}>
             <span style={S.stepNum(step===i+1,step>i+1)}>{step>i+1?"✓":i+1}</span>
             <span style={S.stepLbl}>{s}</span>
@@ -375,7 +397,7 @@ export default function App() {
 
         {step===2&&<>
           {form.type==="ficha"?<>
-            <Card title="Agent Name"><F label="Agent Name" path="agentName" form={form} set={set} ph="Your name"/></Card>
+            <PersonCard title="Seller — Vendedor" role="seller" form={form} set={set} idFirst="DNI"/>
             <Nav onBack={()=>go(1)} onNext={()=>go(3)}/>
           </>:<>
             <PersonCard title="Buyer — Comprador" role="buyer" form={form} set={set}/>
@@ -396,7 +418,10 @@ export default function App() {
               </Grid>
               <Grid style={{marginTop:14}}>
                 <F label="City" path="ficha.city" form={form} set={set} ph="Altea"/>
-                <F label="Type of Property" path="ficha.propertyType" form={form} set={set} ph="Villa"/>
+                <F label="Type of Property" path="ficha.propertyType" options={[{value:"Villa",label:"Villa"},{value:"Apartment",label:"Apartment"},{value:"Town House",label:"Town House"},{value:"Plot",label:"Plot"},{value:"Commercial Premises",label:"Commercial Premises"},{value:"Duplex",label:"Duplex"}]} form={form} set={set}/>
+              </Grid>
+              <Grid style={{marginTop:14}}>
+                <F label="Commission Rate (%)" path="ficha.commissionRate" form={form} set={set} ph="5%"/>
               </Grid>
             </Card>
             <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
@@ -445,8 +470,8 @@ export default function App() {
           <Card title="Pricing">
             <Grid>
               <F label="Price (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
-              <F label="Date" path="ficha.date" type="date" form={form} set={set}/>
             </Grid>
+            {form.ficha.price&&<div style={{...S.note,marginTop:8}}>📝 {fmtWords(form.ficha.price)}</div>}
           </Card>
 
           <Card title="Annual / Monthly Costs">
@@ -457,6 +482,13 @@ export default function App() {
               <F label="Water Bill / month (€)" path="ficha.water" type="number" form={form} set={set} ph="40"/>
               <F label="Electricity Bill / month (€)" path="ficha.electricity" type="number" form={form} set={set} ph="80"/>
             </Grid>
+            <div style={{marginTop:8,fontSize:11,color:"#888",lineHeight:1.6}}>
+              {form.ficha.ibi&&<div>IBI: {fmtWords(form.ficha.ibi)}</div>}
+              {form.ficha.community&&<div>Community: {fmtWords(form.ficha.community)}</div>}
+              {form.ficha.garbage&&<div>Garbage: {fmtWords(form.ficha.garbage)}</div>}
+              {form.ficha.water&&<div>Water: {fmtWords(form.ficha.water)}</div>}
+              {form.ficha.electricity&&<div>Electricity: {fmtWords(form.ficha.electricity)}</div>}
+            </div>
           </Card>
 
           <Card title="Property Details">
