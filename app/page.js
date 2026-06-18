@@ -178,19 +178,16 @@ export default function App() {
       if (!form.city?.trim()) return "Enter the city";
     }
     if (form.type === "ficha") {
-      // Ficha validation
+      // Ficha validation (5 steps: Type, Owner, Property, Documents, Review)
       if (s === 2) {
-        if (!form.agentName?.trim()) return "Enter agent name";
-      }
-      if (s === 3) {
         if (!form.ficha.owner?.trim()) return "Enter owner name";
         if (!form.ficha.address?.trim()) return "Enter property address";
         if (!form.ficha.city?.trim()) return "Enter city";
       }
-      if (s === 4) {
+      if (s === 3) {
         if (!form.ficha.price?.trim()) return "Enter property price";
       }
-      if (s === 5) {
+      if (s === 4) {
         // File validation for required documents
         const requiredDocs = ['ibi', 'garbage', 'dniPassports', 'escritura'];
         const missingRequired = requiredDocs.filter(docType => {
@@ -353,7 +350,7 @@ export default function App() {
       </div></header>
 
       <div style={S.stepsOuter}><div style={S.stepsInner}>
-        {(form.type==="ficha"?["Type","Seller","Owner","Property","Documents","Review"]:["Contract","Parties","Property","Price","Conditions","Generate"]).map((s,i)=>(
+        {(form.type==="ficha"?["Type","Owner","Property","Documents","Review"]:["Contract","Parties","Property","Price","Conditions","Generate"]).map((s,i)=>(
           <div key={i} style={S.step(step===i+1,step>i+1)} onClick={()=>go(i+1)}>
             <span style={S.stepNum(step===i+1,step>i+1)}>{step>i+1?"✓":i+1}</span>
             <span style={S.stepLbl}>{s}</span>
@@ -397,17 +394,6 @@ export default function App() {
 
         {step===2&&<>
           {form.type==="ficha"?<>
-            <PersonCard title="Seller — Vendedor" role="seller" form={form} set={set} idFirst="DNI"/>
-            <Nav onBack={()=>go(1)} onNext={()=>go(3)}/>
-          </>:<>
-            <PersonCard title="Buyer — Comprador" role="buyer" form={form} set={set}/>
-            <PersonCard title="Seller — Vendedor" role="seller" form={form} set={set} idFirst="DNI"/>
-            <Nav onBack={()=>go(1)} onNext={()=>go(3)}/>
-          </>}
-        </>}
-
-        {step===3&&<>
-          {form.type==="ficha"?<>
             <Card title="Property Owner">
               <Grid>
                 <F label="Owner Name" path="ficha.owner" form={form} set={set} ph="Full name"/>
@@ -424,8 +410,16 @@ export default function App() {
                 <F label="Commission Rate (%)" path="ficha.commissionRate" form={form} set={set} ph="5%"/>
               </Grid>
             </Card>
-            <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
+            <Nav onBack={()=>go(1)} onNext={()=>go(3)}/>
           </>:<>
+            <PersonCard title="Buyer — Comprador" role="buyer" form={form} set={set}/>
+            <PersonCard title="Seller — Vendedor" role="seller" form={form} set={set} idFirst="DNI"/>
+            <Nav onBack={()=>go(1)} onNext={()=>go(3)}/>
+          </>}
+        </>}
+
+        {step===3&&<>
+          {form.type!=="ficha"&&<>
             <Card title="Property — Inmueble"><Grid>
               <F label="Property Type" path="property.type" options={PROP_TYPES} form={form} set={set}/>
               <F label="Property Ref. Number" path="property.ref" form={form} set={set} ph="CBLI-12345"/>
@@ -466,7 +460,7 @@ export default function App() {
           </>}
         </>}
 
-        {step===4&&form.type==="ficha"&&<>
+        {step===3&&form.type==="ficha"&&<>
           <Card title="Pricing">
             <Grid>
               <F label="Price (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
@@ -556,7 +550,7 @@ export default function App() {
             <F label="Comments" path="ficha.extraComments" type="textarea" form={form} set={set} ph="Any additional information about the property..."/>
           </Card>
 
-          <Nav onBack={()=>go(3)} onNext={()=>go(5)}/>
+          <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
         </>}
 
         {step===4&&form.type!=="ficha"&&<>
@@ -608,7 +602,7 @@ export default function App() {
           </>}
         </>}
 
-        {form.type==="ficha"&&step===5&&<>
+        {form.type==="ficha"&&step===4&&<>
           <Card title="Upload Documents">
             <Note>Upload required property documents for the listing.</Note>
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
@@ -649,7 +643,7 @@ export default function App() {
               </div>
             </div>
           </Card>
-          <Nav onBack={()=>go(4)} onNext={()=>go(6)}/>
+          <Nav onBack={()=>go(3)} onNext={()=>go(5)}/>
         </>}
 
         {form.type!=="commission"&&form.type!=="ficha"&&step===5&&<>
@@ -661,7 +655,7 @@ export default function App() {
           <Nav onBack={()=>go(4)} onNext={()=>{translateConditions();go(6);}} nextLabel="Preview & Generate →"/>
         </>}
 
-        {step===6&&<>
+        {((form.type==="ficha"&&step===5)||(form.type!=="ficha"&&step===6))&&<>
           <div style={S.banner}>⚡ <strong>Review all details.</strong> Click Generate to create the {form.type==="ficha"?"ficha PDF":"contract"}.</div>
 
           {form.type==="ficha"?<>
