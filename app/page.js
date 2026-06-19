@@ -116,15 +116,20 @@ const blank = () => ({
   ],
   ficha: {
     price: "", agent: "", address: "", city: "", owner: "", phone: "", propertyType: "Villa", date: "", commissionRate: "", ivaIncluded: false,
-    ibi: "", community: "", garbage: "", water: "", electricity: "",
+    ibi: "", community: "", garbage: "",
     plotM2: "", surfaceBuilt: "", builtYear: "", orientation: "", floors: "", timeOnMarket: "",
     bedrooms: "", bathrooms: "", toilets: "", heating: "", parkings: "", refurbishedYear: "",
+    aptFloor: "", buildingFloors: "",
     uploadWeb: "No", uploadIdealista: "No", underground: "No", views: "None",
     coveredGarage: "No", guestApartment: "No", airConditioning: "No",
     swimmingPool: "No", furnitureIncluded: "No", lift: "No", garden: "No",
     touristLicence: "No", cbiSign: "No", haveKeys: "No",
-    nies: false, dniPassports: false, escritura: false, floorPlans: false, cee: false,
-    extraComments: "",
+    bbq: "No", storageRoom: "No", summerKitchen: "No", laundryRoom: "No", outdoorShower: "No", jacuzzi: "No", fireplace: "No",
+    keyholderContact: "", keyholderName: "", keyholderPhone: "",
+    nies: false, dniPassports: false, escritura: false, floorPlans: false, cee: false, ceeRating: "",
+    description: "",
+    newBuilt: "No", newBuiltEndMonth: "", newBuiltEndYear: "",
+    agentEmailName: "",
   },
   fichaFiles: [],
 });
@@ -183,6 +188,7 @@ export default function App() {
         if (!form.ficha.owner?.trim()) return "Enter owner name";
         if (!form.ficha.address?.trim()) return "Enter property address";
         if (!form.ficha.city?.trim()) return "Enter city";
+        if (!form.ficha.commissionRate?.trim()) return "Enter commission rate";
       }
       if (s === 3) {
         if (!form.ficha.price?.trim()) return "Enter property price";
@@ -195,6 +201,22 @@ export default function App() {
         if (!form.ficha.bathrooms?.trim()) return "Select number of bathrooms";
         if (!form.ficha.heating?.trim()) return "Select heating type";
         if (!form.ficha.parkings?.trim()) return "Select number of parkings";
+        // Features required
+        if (!form.ficha.uploadWeb || form.ficha.uploadWeb === "") return "Select Upload on WEB";
+        if (!form.ficha.uploadIdealista || form.ficha.uploadIdealista === "") return "Select Upload on IDEALISTA";
+        if (!form.ficha.underground || form.ficha.underground === "") return "Select Underground";
+        if (!form.ficha.views || form.ficha.views === "") return "Select Views";
+        if (!form.ficha.coveredGarage || form.ficha.coveredGarage === "") return "Select Covered Garage";
+        if (!form.ficha.guestApartment || form.ficha.guestApartment === "") return "Select Guest Apartment";
+        if (!form.ficha.airConditioning || form.ficha.airConditioning === "") return "Select Air Conditioning";
+        if (!form.ficha.swimmingPool || form.ficha.swimmingPool === "") return "Select Swimming Pool";
+        if (!form.ficha.furnitureIncluded || form.ficha.furnitureIncluded === "") return "Select Furniture Included";
+        if (!form.ficha.lift || form.ficha.lift === "") return "Select Lift";
+        if (!form.ficha.garden || form.ficha.garden === "") return "Select Garden";
+        if (!form.ficha.touristLicence || form.ficha.touristLicence === "") return "Select Tourist Licence";
+        if (!form.ficha.cbiSign || form.ficha.cbiSign === "") return "Select CBI Sign outside";
+        if (!form.ficha.haveKeys || form.ficha.haveKeys === "") return "Select Do we have keys";
+        if (!form.ficha.description?.trim()) return "Enter property description";
       }
       if (s === 4) {
         // File validation — only ID/Passport and Contract of Sale required
@@ -338,7 +360,12 @@ export default function App() {
       }
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Generation failed");
-      const email = form.type === "ficha" ? "info@costablancainvestments.com" : "legal@costablancainvestments.com";
+      let email;
+      if (form.type === "ficha") {
+        email = form.ficha?.agentEmailName ? form.ficha.agentEmailName + "@costablancainvestments.com" : "info@costablancainvestments.com";
+      } else {
+        email = "legal@costablancainvestments.com";
+      }
       show(`Ficha sent to ${email}!`, "ok");
     } catch (e) {
       show(e.message || "Error generating ficha. Please try again.", "err");
@@ -479,6 +506,7 @@ export default function App() {
               <F label="Price (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
             </Grid>
             {form.ficha.price&&<div style={{...S.note,marginTop:8}}>📝 {fmtWords(form.ficha.price)}</div>}
+            {form.ficha.price&&form.ficha.commissionRate&&<div style={{...S.note,marginTop:4}}>💰 Commission: {form.ficha.commissionRate}{form.ficha.ivaIncluded?" (IVA incl.)":""} = {fmt(String(Math.round(parseFloat(form.ficha.price)*parseFloat(form.ficha.commissionRate)/100)))}</div>}
           </Card>
 
           <Card title="Annual / Monthly Costs">
@@ -486,15 +514,11 @@ export default function App() {
               <F label="IBI / year (€)" path="ficha.ibi" type="number" form={form} set={set} ph="1200"/>
               <F label="Community / month (€)" path="ficha.community" type="number" form={form} set={set} ph="150"/>
               <F label="Garbage / year (€)" path="ficha.garbage" type="number" form={form} set={set} ph="80"/>
-              <F label="Water Bill / month (€)" path="ficha.water" type="number" form={form} set={set} ph="40"/>
-              <F label="Electricity Bill / month (€)" path="ficha.electricity" type="number" form={form} set={set} ph="80"/>
             </Grid>
             <div style={{marginTop:8,fontSize:11,color:"#888",lineHeight:1.6}}>
               {form.ficha.ibi&&<div>IBI: {fmtWords(form.ficha.ibi)}</div>}
               {form.ficha.community&&<div>Community: {fmtWords(form.ficha.community)}</div>}
               {form.ficha.garbage&&<div>Garbage: {fmtWords(form.ficha.garbage)}</div>}
-              {form.ficha.water&&<div>Water: {fmtWords(form.ficha.water)}</div>}
-              {form.ficha.electricity&&<div>Electricity: {fmtWords(form.ficha.electricity)}</div>}
             </div>
           </Card>
 
@@ -512,6 +536,8 @@ export default function App() {
               <F label="Heating" path="ficha.heating" options={[{value:"Central",label:"Central"},{value:"Splits",label:"Splits"},{value:"Central + Splits",label:"Central + Splits"},{value:"None",label:"None"}]} form={form} set={set}/>
               <F label="Parkings" path="ficha.parkings" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4+",label:"4+"}]} form={form} set={set}/>
               <F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/>
+              <F label="Apartment Floor (optional)" path="ficha.aptFloor" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i),label:String(i)}))]} form={form} set={set}/>
+              <F label="Building Total Floors (optional)" path="ficha.buildingFloors" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i+1),label:String(i+1)}))]} form={form} set={set}/>
             </Grid>
           </Card>
 
@@ -520,17 +546,34 @@ export default function App() {
               <F label="Upload on WEB" path="ficha.uploadWeb" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Upload on IDEALISTA" path="ficha.uploadIdealista" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Underground Parking" path="ficha.underground" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Views" path="ficha.views" options={[{value:"Sea",label:"Sea"},{value:"Mountain",label:"Mountain"},{value:"None",label:"None"}]} form={form} set={set}/>
+              <F label="Views" path="ficha.views" options={[{value:"Sea",label:"Sea"},{value:"Mountain",label:"Mountain"},{value:"Panoramic",label:"Panoramic"},{value:"City",label:"City"},{value:"Street",label:"Street"},{value:"None",label:"None"}]} form={form} set={set}/>
               <F label="Covered Garage" path="ficha.coveredGarage" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Guest Apartment" path="ficha.guestApartment" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"Nuevos",label:"Nuevos (New)"},{value:"Viejos",label:"Viejos (Old)"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"}]} form={form} set={set}/>
+              <F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"Centralised",label:"Centralised"},{value:"Split Units",label:"Split Units"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"},{value:"Infinity",label:"Infinity"}]} form={form} set={set}/>
               <F label="Furniture Included" path="ficha.furnitureIncluded" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Lift" path="ficha.lift" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Garden" path="ficha.garden" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Tourist Licence" path="ficha.touristLicence" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="CBI Sign outside" path="ficha.cbiSign" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Do we have keys" path="ficha.haveKeys" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Do we have keys" path="ficha.haveKeys" options={[{value:"Keyholder",label:"Keyholder"},{value:"Office CBI",label:"Office CBI"},{value:"No",label:"No"}]} form={form} set={set}/>
+              {form.ficha.haveKeys==="Keyholder"&&<>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
+                  <input type="checkbox" checked={form.ficha?.keyholderContact||false} onChange={e=>set("ficha.keyholderContact",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
+                  <label style={{fontSize:13,cursor:"pointer"}}>Contact keyholder</label>
+                </div>
+                {form.ficha.keyholderContact&&<Grid style={{marginTop:8}}>
+                  <F label="Keyholder Name" path="ficha.keyholderName" form={form} set={set} ph="Name"/>
+                  <F label="Keyholder Phone" path="ficha.keyholderPhone" form={form} set={set} ph="+34 600..."/>
+                </Grid>}
+              </>}
+              <F label="BBQ" path="ficha.bbq" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Storage Room" path="ficha.storageRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Summer Kitchen" path="ficha.summerKitchen" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Laundry Room" path="ficha.laundryRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Outdoor Shower" path="ficha.outdoorShower" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Jacuzzi" path="ficha.jacuzzi" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="Fireplace" path="ficha.fireplace" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
             </Grid>
           </Card>
 
@@ -556,11 +599,23 @@ export default function App() {
                 <input type="checkbox" checked={form.ficha?.cee||false} onChange={e=>set("ficha.cee",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
                 <label style={{cursor:"pointer"}}>CEE (Energy Certificate)</label>
               </div>
+              {form.ficha?.cee&&<div style={{marginTop:6,marginLeft:28}}>
+                <F label="CEE Rating" path="ficha.ceeRating" options={[{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"}]} form={form} set={set}/>
+              </div>}
             </div>
           </Card>
 
-          <Card title="Extra Comments">
-            <F label="Comments" path="ficha.extraComments" type="textarea" form={form} set={set} ph="Any additional information about the property..."/>
+          <Card title="Property Description">
+            <Note>Describe the property in detail. You can use voice input on mobile.</Note>
+            <textarea value={form.ficha?.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit"}}/>
+          </Card>
+
+          <Card title="New Built">
+            <F label="Is this a New Built?" path="ficha.newBuilt" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+            {form.ficha.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
+              <F label="End Month" path="ficha.newBuiltEndMonth" options={[{value:"January",label:"January"},{value:"February",label:"February"},{value:"March",label:"March"},{value:"April",label:"April"},{value:"May",label:"May"},{value:"June",label:"June"},{value:"July",label:"July"},{value:"August",label:"August"},{value:"September",label:"September"},{value:"October",label:"October"},{value:"November",label:"November"},{value:"December",label:"December"}]} form={form} set={set}/>
+              <F label="End Year" path="ficha.newBuiltEndYear" options={[...Array(10)].map((_,i)=>({value:String(2024+i),label:String(2024+i)}))} form={form} set={set}/>
+            </Grid>}
           </Card>
 
           <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
@@ -625,6 +680,7 @@ export default function App() {
                 {type:"ibi",label:"IBI (Property Tax)",req:false},
                 {type:"garbage",label:"Garbage / Basura",req:false},
                 {type:"community",label:"Community / Comunidad",req:false},
+                {type:"floorPlans",label:"Floor Plans",req:false},
                 {type:"escritura",label:"Escritura (Purchase Deed)",req:false},
                 {type:"invoice",label:"Water/Electricity/Gas Invoice",req:false},
               ].map(doc=>(
@@ -711,7 +767,13 @@ export default function App() {
               <div style={{marginBottom:10}}><div style={{fontSize:11,fontWeight:700,color:"#8A8A8A",marginBottom:4}}>🇪🇸 SPANISH</div><div style={{fontSize:13,lineHeight:1.6}}>{form.conditions}</div></div>
               {genState==="translating"?<div style={{fontSize:13,color:"#8A8A8A",fontStyle:"italic"}}>⏳ Translating...</div>:translatedCond?<div><div style={{fontSize:11,fontWeight:700,color:"#1A3A5C",marginBottom:4}}>{selLangs.map(l=>l.flag).join(" ")} TRANSLATIONS</div><div style={{fontSize:13,lineHeight:1.6,fontStyle:"italic",color:"#1A3A5C",whiteSpace:"pre-wrap"}}>{translatedCond}</div></div>:<div style={{fontSize:12,color:"#8A8A8A"}}>Translations generated with contract</div>}
             </Card>}
-          </>}
+          {form.type==="ficha"&&<Card title="Send To">
+            <Note>The ficha will be sent to your CBLI email address.</Note>
+            <Grid>
+              <F label="Your email name" path="ficha.agentEmailName" form={form} set={set} ph="bruno.felipe"/>
+            </Grid>
+            {form.ficha.agentEmailName&&<div style={{...S.note,marginTop:8}}>📧 Will send to: {form.ficha.agentEmailName}@costablancainvestments.com</div>}
+          </Card>}
 
           <div style={{display:"flex",gap:12,marginTop:4}}>
             <button style={S.btnSec} onClick={()=>go(5)}>← Edit</button>
@@ -719,7 +781,7 @@ export default function App() {
               {genState==="generating"?"⏳ Generating & Sending...":genState==="done"?"✅ Sent! — Send Again":form.type==="ficha"?"📧 Generate & Send Ficha":"📧 Generate & Send to Lawyer"}
             </button>
           </div>
-          <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"#8A8A8A"}}>{form.type==="ficha"?"PDF will be sent to info@costablancainvestments.com":"PDF + Word will be sent to legal@costablancainvestments.com"}</div>
+          <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"#8A8A8A"}}>{form.type==="ficha"?`PDF will be sent to ${form.ficha?.agentEmailName ? form.ficha.agentEmailName + "@costablancainvestments.com" : "info@costablancainvestments.com"}`:"PDF + Word will be sent to legal@costablancainvestments.com"}</div>
           <button style={{...S.btnSec,marginTop:12,width:"100%"}} onClick={()=>{setForm(blank());setStep(1);setGenState("idle");setTranslatedCond("");}}>🔄 New {form.type==="ficha"?"Ficha":"Contract"}</button>
         </>}
       </main>

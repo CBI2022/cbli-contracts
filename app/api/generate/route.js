@@ -95,9 +95,13 @@ export async function POST(request) {
         }
       }
 
+      const agentEmail = formData.ficha?.agentEmailName
+        ? formData.ficha.agentEmailName + '@costablancainvestments.com'
+        : 'info@costablancainvestments.com';
+
       const { data: emailData, error: emailError } = await resend.emails.send({
         from: 'CBLI Contracts <contracts@costablancainvestments.com>',
-        to: ['info@costablancainvestments.com'],
+        to: [agentEmail],
         subject: `New Property Listing - ${address} - by ${agentName}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -132,7 +136,7 @@ export async function POST(request) {
 
       return NextResponse.json({
         success: true,
-        message: `Ficha sent to info@costablancainvestments.com`,
+        message: `Ficha sent to ${agentEmail}`,
         emailId: emailData?.id
       });
     }
