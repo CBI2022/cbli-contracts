@@ -120,15 +120,15 @@ const blank = () => ({
     plotM2: "", surfaceBuilt: "", builtYear: "", orientation: "", floors: "", timeOnMarket: "",
     bedrooms: "", bathrooms: "", toilets: "", heating: "", parkings: "", refurbishedYear: "",
     aptFloor: "", buildingFloors: "",
-    uploadWeb: "No", uploadIdealista: "No", underground: "No", views: "None",
-    coveredGarage: "No", guestApartment: "No", airConditioning: "No",
-    swimmingPool: "No", furnitureIncluded: "No", lift: "No", garden: "No",
-    touristLicence: "No", cbiSign: "No", haveKeys: "No",
-    bbq: "No", storageRoom: "No", summerKitchen: "No", laundryRoom: "No", outdoorShower: "No", jacuzzi: "No", fireplace: "No",
+    uploadWeb: "", uploadIdealista: "", underground: "", views: "",
+    coveredGarage: "", guestApartment: "", airConditioning: "",
+    swimmingPool: "", furnitureIncluded: "", lift: "", garden: "",
+    touristLicence: "", cbiSign: "", haveKeys: "",
+    bbq: "", storageRoom: "", summerKitchen: "", laundryRoom: "", outdoorShower: "", jacuzzi: "", fireplace: "",
     keyholderContact: "", keyholderName: "", keyholderPhone: "",
     nies: false, dniPassports: false, escritura: false, floorPlans: false, cee: false, ceeRating: "",
     description: "",
-    newBuilt: "No", newBuiltEndMonth: "", newBuiltEndYear: "",
+    newBuilt: "", newBuiltEndMonth: "", newBuiltEndYear: "",
     agentEmailName: "",
   },
   fichaFiles: [],
@@ -564,7 +564,7 @@ export default function App() {
               <div style={lockStyle("refurbishedYear")}><F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/></div>
               <div style={lockStyle("aptFloor")}><F label="Apartment Floor (optional)" path="ficha.aptFloor" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i),label:String(i)}))]} form={form} set={set}/></div>
               <div style={lockStyle("buildingFloors")}><F label="Building Total Floors (optional)" path="ficha.buildingFloors" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i+1),label:String(i+1)}))]} form={form} set={set}/></div>
-              <div style={lockStyle("newBuilt")}><F label="New Built" path="ficha.newBuilt" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("newBuilt")}><F label="New Built" path="ficha.newBuilt" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
             </Grid>
             {f.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
               <F label="End Month" path="ficha.newBuiltEndMonth" options={[{value:"January",label:"January"},{value:"February",label:"February"},{value:"March",label:"March"},{value:"April",label:"April"},{value:"May",label:"May"},{value:"June",label:"June"},{value:"July",label:"July"},{value:"August",label:"August"},{value:"September",label:"September"},{value:"October",label:"October"},{value:"November",label:"November"},{value:"December",label:"December"}]} form={form} set={set}/>
@@ -574,20 +574,20 @@ export default function App() {
 
           <Card title="Features & Amenities">
             <Grid>
-              <div style={lockStyle("uploadWeb")}><F label="Upload on WEB" path="ficha.uploadWeb" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("uploadIdealista")}><F label="Upload on IDEALISTA" path="ficha.uploadIdealista" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("underground")}><F label="Underground Parking" path="ficha.underground" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("views")}><F label="Views" path="ficha.views" options={[{value:"Sea",label:"Sea"},{value:"Mountain",label:"Mountain"},{value:"Panoramic",label:"Panoramic"},{value:"City",label:"City"},{value:"Street",label:"Street"},{value:"None",label:"None"}]} form={form} set={set}/></div>
-              <div style={lockStyle("coveredGarage")}><F label="Covered Garage" path="ficha.coveredGarage" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("guestApartment")}><F label="Guest Apartment" path="ficha.guestApartment" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("airConditioning")}><F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"Centralised",label:"Centralised"},{value:"Split Units",label:"Split Units"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("swimmingPool")}><F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"},{value:"Infinity",label:"Infinity"}]} form={form} set={set}/></div>
-              <div style={lockStyle("furnitureIncluded")}><F label="Furniture Included" path="ficha.furnitureIncluded" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("lift")}><F label="Lift" path="ficha.lift" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("garden")}><F label="Garden" path="ficha.garden" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("touristLicence")}><F label="Tourist Licence" path="ficha.touristLicence" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("cbiSign")}><F label="CBI Sign outside" path="ficha.cbiSign" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("haveKeys")}><F label="Do we have keys" path="ficha.haveKeys" options={[{value:"Keyholder",label:"Keyholder"},{value:"Office CBI",label:"Office CBI"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("uploadWeb")}><F label="Upload on WEB" path="ficha.uploadWeb" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("uploadIdealista")}><F label="Upload on IDEALISTA" path="ficha.uploadIdealista" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("underground")}><F label="Underground Parking" path="ficha.underground" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("views")}><F label="Views" path="ficha.views" options={[{value:"",label:"Select..."},{value:"Sea",label:"Sea"},{value:"Mountain",label:"Mountain"},{value:"Panoramic",label:"Panoramic"},{value:"City",label:"City"},{value:"Street",label:"Street"},{value:"None",label:"None"}]} form={form} set={set}/></div>
+              <div style={lockStyle("coveredGarage")}><F label="Covered Garage" path="ficha.coveredGarage" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("guestApartment")}><F label="Guest Apartment" path="ficha.guestApartment" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("airConditioning")}><F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"",label:"Select..."},{value:"Centralised",label:"Centralised"},{value:"Split Units",label:"Split Units"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("swimmingPool")}><F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"},{value:"Infinity",label:"Infinity"}]} form={form} set={set}/></div>
+              <div style={lockStyle("furnitureIncluded")}><F label="Furniture Included" path="ficha.furnitureIncluded" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("lift")}><F label="Lift" path="ficha.lift" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("garden")}><F label="Garden" path="ficha.garden" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("touristLicence")}><F label="Tourist Licence" path="ficha.touristLicence" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("cbiSign")}><F label="CBI Sign outside" path="ficha.cbiSign" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("haveKeys")}><F label="Do we have keys" path="ficha.haveKeys" options={[{value:"",label:"Select..."},{value:"Keyholder",label:"Keyholder"},{value:"Office CBI",label:"Office CBI"},{value:"No",label:"No"}]} form={form} set={set}/></div>
               {f.haveKeys==="Keyholder"&&<>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
                   <input type="checkbox" checked={f.keyholderContact||false} onChange={e=>set("ficha.keyholderContact",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
@@ -598,14 +598,14 @@ export default function App() {
                   <F label="Keyholder Phone" path="ficha.keyholderPhone" form={form} set={set} ph="+34 600..."/>
                 </Grid>}
               </>}
-              <div style={lockStyle("bbq")}><F label="BBQ" path="ficha.bbq" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("storageRoom")}><F label="Storage Room" path="ficha.storageRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("summerKitchen")}><F label="Summer Kitchen" path="ficha.summerKitchen" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("laundryRoom")}><F label="Laundry Room" path="ficha.laundryRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("outdoorShower")}><F label="Outdoor Shower" path="ficha.outdoorShower" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("jacuzzi")}><F label="Jacuzzi" path="ficha.jacuzzi" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("fireplace")}><F label="Fireplace" path="ficha.fireplace" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
-              <div style={lockStyle("ceeRating")}><F label="CEE (Energy Certificate)" path="ficha.ceeRating" options={[{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"},{value:"Pending",label:"Pending"}]} form={form} set={set}/></div>
+              <div style={lockStyle("bbq")}><F label="BBQ" path="ficha.bbq" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("storageRoom")}><F label="Storage Room" path="ficha.storageRoom" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("summerKitchen")}><F label="Summer Kitchen" path="ficha.summerKitchen" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("laundryRoom")}><F label="Laundry Room" path="ficha.laundryRoom" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("outdoorShower")}><F label="Outdoor Shower" path="ficha.outdoorShower" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("jacuzzi")}><F label="Jacuzzi" path="ficha.jacuzzi" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("fireplace")}><F label="Fireplace" path="ficha.fireplace" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("ceeRating")}><F label="CEE (Energy Certificate)" path="ficha.ceeRating" options={[{value:"",label:"Select..."},{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"},{value:"Pending",label:"Pending"}]} form={form} set={set}/></div>
             </Grid>
           </Card>
 
