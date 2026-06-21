@@ -518,13 +518,11 @@ export default function App() {
           ];
           /* optional fields that don't block the next one */
           const optional = new Set(["toilets","aptFloor","buildingFloors","timeOnMarket"]);
-          /* find first unfilled required field index */
-          let activeIdx = 0;
+          /* find first unfilled required field index — this is the current active field */
+          let activeIdx = seq.length; /* default: all done */
           for (let i = 0; i < seq.length; i++) {
             if (!filled(f[seq[i]]) && !optional.has(seq[i])) { activeIdx = i; break; }
-            if (i === seq.length - 1) activeIdx = seq.length; /* all done */
           }
-          const unlocked = (field) => { const idx = seq.indexOf(field); return idx <= activeIdx || (idx < activeIdx); };
           const canEdit = (field) => { const idx = seq.indexOf(field); return idx <= activeIdx; };
           const lockStyle = (field) => canEdit(field) ? {} : {opacity:0.35,pointerEvents:"none"};
           const lockStyleCard = (fields) => fields.some(fld => canEdit(fld)) ? {} : {opacity:0.35,pointerEvents:"none"};
