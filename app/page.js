@@ -501,47 +501,74 @@ export default function App() {
           </>}
         </>}
 
-        {step===3&&form.type==="ficha"&&<>
+        {step===3&&form.type==="ficha"&&(()=>{
+          /* Sequential field unlock: each field unlocks only after previous required field is filled */
+          const f = form.ficha;
+          const filled = (v) => v !== undefined && v !== null && v !== "";
+          const seq = [
+            "price","ibi","community","garbage",
+            "plotM2","surfaceBuilt","builtYear","orientation","floors","timeOnMarket",
+            "bedrooms","bathrooms","toilets","heating","parkings","refurbishedYear",
+            "aptFloor","buildingFloors","newBuilt",
+            "uploadWeb","uploadIdealista","underground","views",
+            "coveredGarage","guestApartment","airConditioning","swimmingPool",
+            "furnitureIncluded","lift","garden","touristLicence","cbiSign","haveKeys",
+            "bbq","storageRoom","summerKitchen","laundryRoom","outdoorShower","jacuzzi","fireplace",
+            "ceeRating","description"
+          ];
+          /* optional fields that don't block the next one */
+          const optional = new Set(["toilets","aptFloor","buildingFloors","timeOnMarket"]);
+          /* find first unfilled required field index */
+          let activeIdx = 0;
+          for (let i = 0; i < seq.length; i++) {
+            if (!filled(f[seq[i]]) && !optional.has(seq[i])) { activeIdx = i; break; }
+            if (i === seq.length - 1) activeIdx = seq.length; /* all done */
+          }
+          const unlocked = (field) => { const idx = seq.indexOf(field); return idx <= activeIdx || (idx < activeIdx); };
+          const canEdit = (field) => { const idx = seq.indexOf(field); return idx <= activeIdx; };
+          const lockStyle = (field) => canEdit(field) ? {} : {opacity:0.35,pointerEvents:"none"};
+          const lockStyleCard = (fields) => fields.some(fld => canEdit(fld)) ? {} : {opacity:0.35,pointerEvents:"none"};
+          return <>
           <Card title="Pricing">
-            <Grid>
+            <div style={lockStyle("price")}><Grid>
               <F label="Price Including Commission (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
-            </Grid>
-            {form.ficha.price&&<div style={{...S.note,marginTop:8}}>📝 {fmtWords(form.ficha.price)}</div>}
-            {form.ficha.price&&form.ficha.commissionRate&&<div style={{...S.note,marginTop:4}}>💰 Commission: {form.ficha.commissionRate}{form.ficha.ivaIncluded?" (IVA incl.)":""} = {fmt(String(Math.round(parseFloat(form.ficha.price)*parseFloat(form.ficha.commissionRate)/100)))}</div>}
+            </Grid></div>
+            {f.price&&<div style={{...S.note,marginTop:8}}>📝 {fmtWords(f.price)}</div>}
+            {f.price&&f.commissionRate&&<div style={{...S.note,marginTop:4}}>💰 Commission: {f.commissionRate}{f.ivaIncluded?" (IVA incl.)":""} = {fmt(String(Math.round(parseFloat(f.price)*parseFloat(f.commissionRate)/100)))}</div>}
           </Card>
 
           <Card title="Annual / Monthly Costs">
             <Grid>
-              <F label="IBI / year (€)" path="ficha.ibi" type="number" form={form} set={set} ph="1200"/>
-              <F label="Community / month (€)" path="ficha.community" type="number" form={form} set={set} ph="150"/>
-              <F label="Garbage / year (€)" path="ficha.garbage" type="number" form={form} set={set} ph="80"/>
+              <div style={lockStyle("ibi")}><F label="IBI / year (€)" path="ficha.ibi" type="number" form={form} set={set} ph="1200"/></div>
+              <div style={lockStyle("community")}><F label="Community / month (€)" path="ficha.community" type="number" form={form} set={set} ph="150"/></div>
+              <div style={lockStyle("garbage")}><F label="Garbage / year (€)" path="ficha.garbage" type="number" form={form} set={set} ph="80"/></div>
             </Grid>
             <div style={{marginTop:8,fontSize:11,color:"#888",lineHeight:1.6}}>
-              {form.ficha.ibi&&<div>IBI: {fmtWords(form.ficha.ibi)}</div>}
-              {form.ficha.community&&<div>Community: {fmtWords(form.ficha.community)}</div>}
-              {form.ficha.garbage&&<div>Garbage: {fmtWords(form.ficha.garbage)}</div>}
+              {f.ibi&&<div>IBI: {fmtWords(f.ibi)}</div>}
+              {f.community&&<div>Community: {fmtWords(f.community)}</div>}
+              {f.garbage&&<div>Garbage: {fmtWords(f.garbage)}</div>}
             </div>
           </Card>
 
           <Card title="Property Details">
             <Grid>
-              <F label="Plot Size (m²)" path="ficha.plotM2" type="number" form={form} set={set} ph="800"/>
-              <F label="Surface Built (m²)" path="ficha.surfaceBuilt" type="number" form={form} set={set} ph="250"/>
-              <F label="Year Built" path="ficha.builtYear" options={[...Array(60)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))} form={form} set={set}/>
-              <F label="Orientation" path="ficha.orientation" options={[{value:"North",label:"North"},{value:"South",label:"South"},{value:"East",label:"East"},{value:"West",label:"West"},{value:"North-East",label:"North-East"},{value:"North-West",label:"North-West"},{value:"South-East",label:"South-East"},{value:"South-West",label:"South-West"}]} form={form} set={set}/>
-              <F label="Floors" path="ficha.floors" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/>
-              <F label="Time on Market" path="ficha.timeOnMarket" form={form} set={set} ph="3 months"/>
-              <F label="Bedrooms" path="ficha.bedrooms" options={[{value:"0",label:"0 (Studio)"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5",label:"5"},{value:"6+",label:"6+"}]} form={form} set={set}/>
-              <F label="Bathrooms" path="ficha.bathrooms" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/>
-              <F label="Toilets (optional)" path="ficha.toilets" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3+",label:"3+"}]} form={form} set={set}/>
-              <F label="Heating" path="ficha.heating" options={[{value:"Central",label:"Central"},{value:"Splits",label:"Splits"},{value:"Central + Splits",label:"Central + Splits"},{value:"None",label:"None"}]} form={form} set={set}/>
-              <F label="Parkings" path="ficha.parkings" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4+",label:"4+"}]} form={form} set={set}/>
-              <F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/>
-              <F label="Apartment Floor (optional)" path="ficha.aptFloor" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i),label:String(i)}))]} form={form} set={set}/>
-              <F label="Building Total Floors (optional)" path="ficha.buildingFloors" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i+1),label:String(i+1)}))]} form={form} set={set}/>
-              <F label="New Built" path="ficha.newBuilt" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <div style={lockStyle("plotM2")}><F label="Plot Size (m²)" path="ficha.plotM2" type="number" form={form} set={set} ph="800"/></div>
+              <div style={lockStyle("surfaceBuilt")}><F label="Surface Built (m²)" path="ficha.surfaceBuilt" type="number" form={form} set={set} ph="250"/></div>
+              <div style={lockStyle("builtYear")}><F label="Year Built" path="ficha.builtYear" options={[...Array(60)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))} form={form} set={set}/></div>
+              <div style={lockStyle("orientation")}><F label="Orientation" path="ficha.orientation" options={[{value:"North",label:"North"},{value:"South",label:"South"},{value:"East",label:"East"},{value:"West",label:"West"},{value:"North-East",label:"North-East"},{value:"North-West",label:"North-West"},{value:"South-East",label:"South-East"},{value:"South-West",label:"South-West"}]} form={form} set={set}/></div>
+              <div style={lockStyle("floors")}><F label="Floors" path="ficha.floors" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/></div>
+              <div style={lockStyle("timeOnMarket")}><F label="Time on Market (optional)" path="ficha.timeOnMarket" form={form} set={set} ph="3 months"/></div>
+              <div style={lockStyle("bedrooms")}><F label="Bedrooms" path="ficha.bedrooms" options={[{value:"0",label:"0 (Studio)"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5",label:"5"},{value:"6+",label:"6+"}]} form={form} set={set}/></div>
+              <div style={lockStyle("bathrooms")}><F label="Bathrooms" path="ficha.bathrooms" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/></div>
+              <div style={lockStyle("toilets")}><F label="Toilets (optional)" path="ficha.toilets" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3+",label:"3+"}]} form={form} set={set}/></div>
+              <div style={lockStyle("heating")}><F label="Heating" path="ficha.heating" options={[{value:"Central",label:"Central"},{value:"Splits",label:"Splits"},{value:"Central + Splits",label:"Central + Splits"},{value:"None",label:"None"}]} form={form} set={set}/></div>
+              <div style={lockStyle("parkings")}><F label="Parkings" path="ficha.parkings" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4+",label:"4+"}]} form={form} set={set}/></div>
+              <div style={lockStyle("refurbishedYear")}><F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/></div>
+              <div style={lockStyle("aptFloor")}><F label="Apartment Floor (optional)" path="ficha.aptFloor" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i),label:String(i)}))]} form={form} set={set}/></div>
+              <div style={lockStyle("buildingFloors")}><F label="Building Total Floors (optional)" path="ficha.buildingFloors" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i+1),label:String(i+1)}))]} form={form} set={set}/></div>
+              <div style={lockStyle("newBuilt")}><F label="New Built" path="ficha.newBuilt" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
             </Grid>
-            {form.ficha.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
+            {f.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
               <F label="End Month" path="ficha.newBuiltEndMonth" options={[{value:"January",label:"January"},{value:"February",label:"February"},{value:"March",label:"March"},{value:"April",label:"April"},{value:"May",label:"May"},{value:"June",label:"June"},{value:"July",label:"July"},{value:"August",label:"August"},{value:"September",label:"September"},{value:"October",label:"October"},{value:"November",label:"November"},{value:"December",label:"December"}]} form={form} set={set}/>
               <F label="End Year" path="ficha.newBuiltEndYear" options={[...Array(10)].map((_,i)=>({value:String(2024+i),label:String(2024+i)}))} form={form} set={set}/>
             </Grid>}
@@ -549,49 +576,50 @@ export default function App() {
 
           <Card title="Features & Amenities">
             <Grid>
-              <F label="Upload on WEB" path="ficha.uploadWeb" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Upload on IDEALISTA" path="ficha.uploadIdealista" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Underground Parking" path="ficha.underground" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Views" path="ficha.views" options={[{value:"Sea",label:"Sea"},{value:"Mountain",label:"Mountain"},{value:"Panoramic",label:"Panoramic"},{value:"City",label:"City"},{value:"Street",label:"Street"},{value:"None",label:"None"}]} form={form} set={set}/>
-              <F label="Covered Garage" path="ficha.coveredGarage" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Guest Apartment" path="ficha.guestApartment" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"Centralised",label:"Centralised"},{value:"Split Units",label:"Split Units"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"},{value:"Infinity",label:"Infinity"}]} form={form} set={set}/>
-              <F label="Furniture Included" path="ficha.furnitureIncluded" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Lift" path="ficha.lift" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Garden" path="ficha.garden" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Tourist Licence" path="ficha.touristLicence" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="CBI Sign outside" path="ficha.cbiSign" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Do we have keys" path="ficha.haveKeys" options={[{value:"Keyholder",label:"Keyholder"},{value:"Office CBI",label:"Office CBI"},{value:"No",label:"No"}]} form={form} set={set}/>
-              {form.ficha.haveKeys==="Keyholder"&&<>
+              <div style={lockStyle("uploadWeb")}><F label="Upload on WEB" path="ficha.uploadWeb" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("uploadIdealista")}><F label="Upload on IDEALISTA" path="ficha.uploadIdealista" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("underground")}><F label="Underground Parking" path="ficha.underground" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("views")}><F label="Views" path="ficha.views" options={[{value:"Sea",label:"Sea"},{value:"Mountain",label:"Mountain"},{value:"Panoramic",label:"Panoramic"},{value:"City",label:"City"},{value:"Street",label:"Street"},{value:"None",label:"None"}]} form={form} set={set}/></div>
+              <div style={lockStyle("coveredGarage")}><F label="Covered Garage" path="ficha.coveredGarage" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("guestApartment")}><F label="Guest Apartment" path="ficha.guestApartment" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("airConditioning")}><F label="Air Conditioning" path="ficha.airConditioning" options={[{value:"Centralised",label:"Centralised"},{value:"Split Units",label:"Split Units"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("swimmingPool")}><F label="Swimming Pool" path="ficha.swimmingPool" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"},{value:"Community",label:"Community"},{value:"Infinity",label:"Infinity"}]} form={form} set={set}/></div>
+              <div style={lockStyle("furnitureIncluded")}><F label="Furniture Included" path="ficha.furnitureIncluded" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("lift")}><F label="Lift" path="ficha.lift" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("garden")}><F label="Garden" path="ficha.garden" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("touristLicence")}><F label="Tourist Licence" path="ficha.touristLicence" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("cbiSign")}><F label="CBI Sign outside" path="ficha.cbiSign" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("haveKeys")}><F label="Do we have keys" path="ficha.haveKeys" options={[{value:"Keyholder",label:"Keyholder"},{value:"Office CBI",label:"Office CBI"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              {f.haveKeys==="Keyholder"&&<>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
-                  <input type="checkbox" checked={form.ficha?.keyholderContact||false} onChange={e=>set("ficha.keyholderContact",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
+                  <input type="checkbox" checked={f.keyholderContact||false} onChange={e=>set("ficha.keyholderContact",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
                   <label style={{fontSize:13,cursor:"pointer"}}>Contact keyholder</label>
                 </div>
-                {form.ficha.keyholderContact&&<Grid style={{marginTop:8}}>
+                {f.keyholderContact&&<Grid style={{marginTop:8}}>
                   <F label="Keyholder Name" path="ficha.keyholderName" form={form} set={set} ph="Name"/>
                   <F label="Keyholder Phone" path="ficha.keyholderPhone" form={form} set={set} ph="+34 600..."/>
                 </Grid>}
               </>}
-              <F label="BBQ" path="ficha.bbq" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Storage Room" path="ficha.storageRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Summer Kitchen" path="ficha.summerKitchen" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Laundry Room" path="ficha.laundryRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Outdoor Shower" path="ficha.outdoorShower" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Jacuzzi" path="ficha.jacuzzi" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="Fireplace" path="ficha.fireplace" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-              <F label="CEE (Energy Certificate)" path="ficha.ceeRating" options={[{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"},{value:"Pending",label:"Pending"}]} form={form} set={set}/>
+              <div style={lockStyle("bbq")}><F label="BBQ" path="ficha.bbq" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("storageRoom")}><F label="Storage Room" path="ficha.storageRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("summerKitchen")}><F label="Summer Kitchen" path="ficha.summerKitchen" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("laundryRoom")}><F label="Laundry Room" path="ficha.laundryRoom" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("outdoorShower")}><F label="Outdoor Shower" path="ficha.outdoorShower" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("jacuzzi")}><F label="Jacuzzi" path="ficha.jacuzzi" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("fireplace")}><F label="Fireplace" path="ficha.fireplace" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("ceeRating")}><F label="CEE (Energy Certificate)" path="ficha.ceeRating" options={[{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"},{value:"Pending",label:"Pending"}]} form={form} set={set}/></div>
             </Grid>
           </Card>
 
-
+          <div style={lockStyle("description")}>
           <Card title="Property Description *">
-            <Note>Describe the property in detail. Tap the microphone to dictate.</Note>
-            <textarea value={form.ficha?.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit"}}/>
+            <Note>Describe the property in detail.</Note>
+            <textarea value={f.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit"}}/>
           </Card>
+          </div>
 
           <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
-        </>}
+        </>})()}
 
         {step===4&&form.type!=="ficha"&&<>
           <Card title="Sale Price">
