@@ -587,10 +587,7 @@ export default function App() {
 
           <Card title="Property Description *">
             <Note>Describe the property in detail. Tap the microphone to dictate.</Note>
-            <div style={{position:"relative"}}>
-              <textarea value={form.ficha?.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit",paddingRight:50}}/>
-              <button type="button" onClick={()=>{if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){alert('Voice input not supported in this browser');return;}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new SR();r.lang='en-US';r.continuous=true;r.interimResults=false;r.onresult=e=>{const t=Array.from(e.results).map(r=>r[0].transcript).join(' ');set("ficha.description",(form.ficha?.description||'')+' '+t)};r.start();setTimeout(()=>r.stop(),30000)}} style={{position:"absolute",right:8,top:8,background:"#CC3333",color:"#fff",border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>🎤</button>
-            </div>
+            <textarea value={form.ficha?.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit"}}/>
           </Card>
 
           <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
@@ -742,6 +739,7 @@ export default function App() {
               <div style={{marginBottom:10}}><div style={{fontSize:11,fontWeight:700,color:"#8A8A8A",marginBottom:4}}>🇪🇸 SPANISH</div><div style={{fontSize:13,lineHeight:1.6}}>{form.conditions}</div></div>
               {genState==="translating"?<div style={{fontSize:13,color:"#8A8A8A",fontStyle:"italic"}}>⏳ Translating...</div>:translatedCond?<div><div style={{fontSize:11,fontWeight:700,color:"#1A3A5C",marginBottom:4}}>{selLangs.map(l=>l.flag).join(" ")} TRANSLATIONS</div><div style={{fontSize:13,lineHeight:1.6,fontStyle:"italic",color:"#1A3A5C",whiteSpace:"pre-wrap"}}>{translatedCond}</div></div>:<div style={{fontSize:12,color:"#8A8A8A"}}>Translations generated with contract</div>}
             </Card>}
+          </>}
           {form.type==="ficha"&&<Card title="Send To">
             <Note>The ficha will be sent to your CBLI email address.</Note>
             <Grid>
