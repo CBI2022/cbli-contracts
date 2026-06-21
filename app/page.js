@@ -216,6 +216,7 @@ export default function App() {
         if (!form.ficha.touristLicence || form.ficha.touristLicence === "") return "Select Tourist Licence";
         if (!form.ficha.cbiSign || form.ficha.cbiSign === "") return "Select CBI Sign outside";
         if (!form.ficha.haveKeys || form.ficha.haveKeys === "") return "Select Do we have keys";
+        if (!form.ficha.ceeRating || form.ficha.ceeRating === "") return "Select CEE energy rating";
         if (!form.ficha.description?.trim()) return "Enter property description";
       }
       if (s === 4) {
@@ -503,7 +504,7 @@ export default function App() {
         {step===3&&form.type==="ficha"&&<>
           <Card title="Pricing">
             <Grid>
-              <F label="Price (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
+              <F label="Price Including Commission (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
             </Grid>
             {form.ficha.price&&<div style={{...S.note,marginTop:8}}>📝 {fmtWords(form.ficha.price)}</div>}
             {form.ficha.price&&form.ficha.commissionRate&&<div style={{...S.note,marginTop:4}}>💰 Commission: {form.ficha.commissionRate}{form.ficha.ivaIncluded?" (IVA incl.)":""} = {fmt(String(Math.round(parseFloat(form.ficha.price)*parseFloat(form.ficha.commissionRate)/100)))}</div>}
@@ -538,7 +539,12 @@ export default function App() {
               <F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/>
               <F label="Apartment Floor (optional)" path="ficha.aptFloor" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i),label:String(i)}))]} form={form} set={set}/>
               <F label="Building Total Floors (optional)" path="ficha.buildingFloors" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i+1),label:String(i+1)}))]} form={form} set={set}/>
+              <F label="New Built" path="ficha.newBuilt" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
             </Grid>
+            {form.ficha.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
+              <F label="End Month" path="ficha.newBuiltEndMonth" options={[{value:"January",label:"January"},{value:"February",label:"February"},{value:"March",label:"March"},{value:"April",label:"April"},{value:"May",label:"May"},{value:"June",label:"June"},{value:"July",label:"July"},{value:"August",label:"August"},{value:"September",label:"September"},{value:"October",label:"October"},{value:"November",label:"November"},{value:"December",label:"December"}]} form={form} set={set}/>
+              <F label="End Year" path="ficha.newBuiltEndYear" options={[...Array(10)].map((_,i)=>({value:String(2024+i),label:String(2024+i)}))} form={form} set={set}/>
+            </Grid>}
           </Card>
 
           <Card title="Features & Amenities">
@@ -574,48 +580,17 @@ export default function App() {
               <F label="Outdoor Shower" path="ficha.outdoorShower" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Jacuzzi" path="ficha.jacuzzi" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
               <F label="Fireplace" path="ficha.fireplace" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
+              <F label="CEE (Energy Certificate)" path="ficha.ceeRating" options={[{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"},{value:"Pending",label:"Pending"}]} form={form} set={set}/>
             </Grid>
           </Card>
 
-          <Card title="Requested Documents">
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <input type="checkbox" checked={form.ficha?.nies||false} onChange={e=>set("ficha.nies",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
-                <label style={{cursor:"pointer"}}>NIEs</label>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <input type="checkbox" checked={form.ficha?.dniPassports||false} onChange={e=>set("ficha.dniPassports",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
-                <label style={{cursor:"pointer"}}>DNI / Passports</label>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <input type="checkbox" checked={form.ficha?.escritura||false} onChange={e=>set("ficha.escritura",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
-                <label style={{cursor:"pointer"}}>Escritura (Purchase Deed)</label>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <input type="checkbox" checked={form.ficha?.floorPlans||false} onChange={e=>set("ficha.floorPlans",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
-                <label style={{cursor:"pointer"}}>Floor Plans</label>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <input type="checkbox" checked={form.ficha?.cee||false} onChange={e=>set("ficha.cee",e.target.checked)} style={{width:18,height:18,cursor:"pointer"}}/>
-                <label style={{cursor:"pointer"}}>CEE (Energy Certificate)</label>
-              </div>
-              {form.ficha?.cee&&<div style={{marginTop:6,marginLeft:28}}>
-                <F label="CEE Rating" path="ficha.ceeRating" options={[{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"}]} form={form} set={set}/>
-              </div>}
+
+          <Card title="Property Description *">
+            <Note>Describe the property in detail. Tap the microphone to dictate.</Note>
+            <div style={{position:"relative"}}>
+              <textarea value={form.ficha?.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit",paddingRight:50}}/>
+              <button type="button" onClick={()=>{if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){alert('Voice input not supported in this browser');return;}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new SR();r.lang='en-US';r.continuous=true;r.interimResults=false;r.onresult=e=>{const t=Array.from(e.results).map(r=>r[0].transcript).join(' ');set("ficha.description",(form.ficha?.description||'')+' '+t)};r.start();setTimeout(()=>r.stop(),30000)}} style={{position:"absolute",right:8,top:8,background:"#CC3333",color:"#fff",border:"none",borderRadius:"50%",width:36,height:36,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>🎤</button>
             </div>
-          </Card>
-
-          <Card title="Property Description">
-            <Note>Describe the property in detail. You can use voice input on mobile.</Note>
-            <textarea value={form.ficha?.description||""} onChange={e=>set("ficha.description",e.target.value)} placeholder="Describe the property: layout, features, condition, views, nearby amenities..." style={{...S.input,minHeight:120,resize:"vertical",fontFamily:"inherit"}}/>
-          </Card>
-
-          <Card title="New Built">
-            <F label="Is this a New Built?" path="ficha.newBuilt" options={[{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/>
-            {form.ficha.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
-              <F label="End Month" path="ficha.newBuiltEndMonth" options={[{value:"January",label:"January"},{value:"February",label:"February"},{value:"March",label:"March"},{value:"April",label:"April"},{value:"May",label:"May"},{value:"June",label:"June"},{value:"July",label:"July"},{value:"August",label:"August"},{value:"September",label:"September"},{value:"October",label:"October"},{value:"November",label:"November"},{value:"December",label:"December"}]} form={form} set={set}/>
-              <F label="End Year" path="ficha.newBuiltEndYear" options={[...Array(10)].map((_,i)=>({value:String(2024+i),label:String(2024+i)}))} form={form} set={set}/>
-            </Grid>}
           </Card>
 
           <Nav onBack={()=>go(2)} onNext={()=>go(4)}/>
