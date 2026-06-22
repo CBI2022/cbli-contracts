@@ -143,6 +143,7 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [genState, setGenState] = useState("idle");
   const [translatedCond, setTranslatedCond] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState([]); /* separate state for File objects — not deep-cloned */
 
   const show = (msg, type="ok") => { setToast({msg,type}); setTimeout(()=>setToast(null),4500); };
 
@@ -223,7 +224,7 @@ export default function App() {
         // File validation — only ID/Passport and Contract of Sale required
         const requiredDocs = ['dniPassports', 'contract'];
         const missingRequired = requiredDocs.filter(docType => {
-          const hasFile = form.fichaFiles.some(f => f.type === docType);
+          const hasFile = uploadedFiles.some(f => f.type === docType);
           return !hasFile;
         });
         if (missingRequired.length > 0) {
@@ -345,7 +346,7 @@ export default function App() {
       if (form.type === "ficha") {
         const fd = new FormData();
         fd.append('formData', JSON.stringify(form));
-        form.fichaFiles.forEach(f => {
+        uploadedFiles.forEach(f => {
           fd.append('files', f.file, f.name);
         });
         response = await fetch("/api/generate", {
@@ -685,10 +686,10 @@ export default function App() {
                 <div key={doc.type}>
                   <label style={S.fLabel}>{doc.label}{doc.req?" - Required":" - Optional"}</label>
                   <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])}} style={{...S.input,flex:1,cursor:"pointer"}}/>
-                    <button type="button" onClick={()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';inp.onchange=e=>{const f=e.target.files?.[0];if(f)set("fichaFiles",[...form.fichaFiles.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])};inp.click()}} style={{padding:"8px 12px",background:"#1A3A5C",color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}>📷 Take Photo</button>
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)setUploadedFiles(prev=>[...prev.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])}} style={{...S.input,flex:1,cursor:"pointer"}}/>
+                    <button type="button" onClick={()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';inp.onchange=e=>{const f=e.target.files?.[0];if(f)setUploadedFiles(prev=>[...prev.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])};inp.click()}} style={{padding:"8px 12px",background:"#1A3A5C",color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}>📷 Take Photo</button>
                   </div>
-                  {form.fichaFiles.find(x=>x.type===doc.type)&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {form.fichaFiles.find(x=>x.type===doc.type).name}</div>}
+                  {uploadedFiles.find(x=>x.type===doc.type)&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {uploadedFiles.find(x=>x.type===doc.type).name}</div>}
                 </div>
               ))}
             </div>
@@ -723,7 +724,7 @@ export default function App() {
               ].map(([l,v],i)=>(<div key={i} style={S.sumItem}><div style={S.sumL}>{l}</div><div style={S.sumV}>{v}</div></div>))}
             </div></Card>
             <Card title="Uploaded Documents">
-              {form.fichaFiles.length===0?<div style={{color:"#8A8A8A",fontSize:13}}>No files uploaded yet</div>:form.fichaFiles.map((f,i)=>(<div key={i} style={{fontSize:12,padding:"6px 0",color:"#2D7A4F"}}>✓ {f.name}</div>))}
+              {uploadedFiles.length===0?<div style={{color:"#8A8A8A",fontSize:13}}>No files uploaded yet</div>:uploadedFiles.map((f,i)=>(<div key={i} style={{fontSize:12,padding:"6px 0",color:"#2D7A4F"}}>✓ {f.name}</div>))}
             </Card>
           </>:<>
             <Card title="Deal Summary"><div style={S.sumGrid}>
@@ -781,7 +782,7 @@ export default function App() {
             </button>
           </div>
           <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"#8A8A8A"}}>{form.type==="ficha"?`PDF will be sent to ${form.ficha?.agentEmailName ? form.ficha.agentEmailName + "@costablancainvestments.com" : "Enter your name above"}`:"PDF + Word will be sent to legal@costablancainvestments.com"}</div>
-          <button style={{...S.btnSec,marginTop:12,width:"100%"}} onClick={()=>{setForm(blank());setStep(1);setGenState("idle");setTranslatedCond("");}}>🔄 New {form.type==="ficha"?"Ficha":"Contract"}</button>
+          <button style={{...S.btnSec,marginTop:12,width:"100%"}} onClick={()=>{setForm(blank());setStep(1);setGenState("idle");setTranslatedCond("");setUploadedFiles([]);}}>🔄 New {form.type==="ficha"?"Ficha":"Contract"}</button>
         </>}
       </main>
       <footer style={S.footer}>Congrats, new sale coming! Now take your time to fill in all the correct info. No rush, do it perfect.</footer>
