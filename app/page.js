@@ -769,7 +769,7 @@ export default function App() {
           {form.type==="ficha"&&<Card title="Send To">
             <Note>Write here below ONLY your name. The system will generate your CBI email automatically.</Note>
             <Grid>
-              <F label="Your name" path="ficha.agentEmailName" form={form} set={set} ph="bruno.felipe"/>
+              <F label="Your name" path="ficha.agentEmailName" form={form} set={set} ph="karina"/>
             </Grid>
             {form.ficha.agentEmailName&&<div style={{...S.note,marginTop:8}}>📧 Will send to: {form.ficha.agentEmailName}@costablancainvestments.com</div>}
           </Card>}
