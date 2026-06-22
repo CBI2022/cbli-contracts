@@ -767,9 +767,9 @@ export default function App() {
             </Card>}
           </>}
           {form.type==="ficha"&&<Card title="Send To">
-            <Note>The ficha will be sent to your CBLI email address.</Note>
+            <Note>Write here below ONLY your name. The system will generate your CBI email automatically.</Note>
             <Grid>
-              <F label="Your email name" path="ficha.agentEmailName" form={form} set={set} ph="bruno.felipe"/>
+              <F label="Your name" path="ficha.agentEmailName" form={form} set={set} ph="bruno.felipe"/>
             </Grid>
             {form.ficha.agentEmailName&&<div style={{...S.note,marginTop:8}}>📧 Will send to: {form.ficha.agentEmailName}@costablancainvestments.com</div>}
           </Card>}
@@ -780,7 +780,7 @@ export default function App() {
               {genState==="generating"?"⏳ Generating & Sending...":genState==="done"?"✅ Sent! — Send Again":form.type==="ficha"?"📧 Generate & Send Ficha":"📧 Generate & Send to Lawyer"}
             </button>
           </div>
-          <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"#8A8A8A"}}>{form.type==="ficha"?`PDF will be sent to ${form.ficha?.agentEmailName ? form.ficha.agentEmailName + "@costablancainvestments.com" : "info@costablancainvestments.com"}`:"PDF + Word will be sent to legal@costablancainvestments.com"}</div>
+          <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"#8A8A8A"}}>{form.type==="ficha"?`PDF will be sent to ${form.ficha?.agentEmailName ? form.ficha.agentEmailName + "@costablancainvestments.com" : "Enter your name above"}`:"PDF + Word will be sent to legal@costablancainvestments.com"}</div>
           <button style={{...S.btnSec,marginTop:12,width:"100%"}} onClick={()=>{setForm(blank());setStep(1);setGenState("idle");setTranslatedCond("");}}>🔄 New {form.type==="ficha"?"Ficha":"Contract"}</button>
         </>}
       </main>
