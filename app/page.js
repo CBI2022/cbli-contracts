@@ -344,15 +344,19 @@ export default function App() {
     try {
       let response;
       if (form.type === "ficha") {
-        const fd = new FormData();
-        fd.append('formData', JSON.stringify(form));
-        uploadedFiles.forEach(f => {
-          fd.append('files', f.file, f.name);
-        });
-        response = await fetch("/api/generate", {
-          method: "POST",
-          body: fd,
-        });
+        const validFiles = uploadedFiles.filter(f => f.file instanceof Blob);
+        if (validFiles.length > 0) {
+          const fd = new FormData();
+          fd.append('formData', JSON.stringify(form));
+          validFiles.forEach(f => fd.append('files', f.file, f.name));
+          response = await fetch("/api/generate", { method: "POST", body: fd });
+        } else {
+          response = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+          });
+        }
       } else {
         response = await fetch("/api/generate", {
           method: "POST",
