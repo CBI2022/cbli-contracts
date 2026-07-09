@@ -509,8 +509,11 @@ export default function App() {
         {step===3&&form.type==="ficha"&&(()=>{
           /* Sequential field unlock: each field unlocks only after previous required field is filled */
           const f = form.ficha;
+          const isPlot = f.propertyType === "Plot";
           const filled = (v) => v !== undefined && v !== null && v !== "";
-          const seq = [
+          const seq = isPlot
+            ? ["price","ibi","garbage","plotM2","timeOnMarket","description"]
+            : [
             "price","ibi","community","garbage",
             "plotM2","surfaceBuilt","builtYear","orientation","floors","timeOnMarket",
             "bedrooms","bathrooms","toilets","heating","parkings","refurbishedYear",
@@ -522,7 +525,7 @@ export default function App() {
             "ceeRating","description"
           ];
           /* optional fields that don't block the next one */
-          const optional = new Set(["toilets","aptFloor","buildingFloors","timeOnMarket"]);
+          const optional = isPlot ? new Set(["timeOnMarket"]) : new Set(["toilets","aptFloor","buildingFloors","timeOnMarket"]);
           /* find first unfilled required field index — this is the current active field */
           let activeIdx = seq.length; /* default: all done */
           for (let i = 0; i < seq.length; i++) {
@@ -543,12 +546,12 @@ export default function App() {
           <Card title="Annual / Monthly Costs">
             <Grid>
               <div style={lockStyle("ibi")}><F label="IBI / year (€)" path="ficha.ibi" type="number" form={form} set={set} ph="1200"/></div>
-              <div style={lockStyle("community")}><F label="Community / month (€)" path="ficha.community" type="number" form={form} set={set} ph="150"/></div>
+              {!isPlot&&<div style={lockStyle("community")}><F label="Community / month (€)" path="ficha.community" type="number" form={form} set={set} ph="150"/></div>}
               <div style={lockStyle("garbage")}><F label="Garbage / year (€)" path="ficha.garbage" type="number" form={form} set={set} ph="80"/></div>
             </Grid>
             <div style={{marginTop:8,fontSize:11,color:"#888",lineHeight:1.6}}>
               {f.ibi&&<div>IBI: {fmtWords(f.ibi)}</div>}
-              {f.community&&<div>Community: {fmtWords(f.community)}</div>}
+              {!isPlot&&f.community&&<div>Community: {fmtWords(f.community)}</div>}
               {f.garbage&&<div>Garbage: {fmtWords(f.garbage)}</div>}
             </div>
           </Card>
@@ -556,12 +559,12 @@ export default function App() {
           <Card title="Property Details">
             <Grid>
               <div style={lockStyle("plotM2")}><F label="Plot Size (m²)" path="ficha.plotM2" type="number" form={form} set={set} ph="800"/></div>
-              <div style={lockStyle("surfaceBuilt")}><F label="Surface Built (m²)" path="ficha.surfaceBuilt" type="number" form={form} set={set} ph="250"/></div>
+              {!isPlot&&<><div style={lockStyle("surfaceBuilt")}><F label="Surface Built (m²)" path="ficha.surfaceBuilt" type="number" form={form} set={set} ph="250"/></div>
               <div style={lockStyle("builtYear")}><F label="Year Built" path="ficha.builtYear" options={[...Array(60)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))} form={form} set={set}/></div>
               <div style={lockStyle("orientation")}><F label="Orientation" path="ficha.orientation" options={[{value:"North",label:"North"},{value:"South",label:"South"},{value:"East",label:"East"},{value:"West",label:"West"},{value:"North-East",label:"North-East"},{value:"North-West",label:"North-West"},{value:"South-East",label:"South-East"},{value:"South-West",label:"South-West"}]} form={form} set={set}/></div>
-              <div style={lockStyle("floors")}><F label="Floors" path="ficha.floors" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/></div>
+              <div style={lockStyle("floors")}><F label="Floors" path="ficha.floors" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/></div></>}
               <div style={lockStyle("timeOnMarket")}><F label="Time on Market (optional)" path="ficha.timeOnMarket" form={form} set={set} ph="3 months"/></div>
-              <div style={lockStyle("bedrooms")}><F label="Bedrooms" path="ficha.bedrooms" options={[{value:"0",label:"0 (Studio)"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5",label:"5"},{value:"6+",label:"6+"}]} form={form} set={set}/></div>
+              {!isPlot&&<><div style={lockStyle("bedrooms")}><F label="Bedrooms" path="ficha.bedrooms" options={[{value:"0",label:"0 (Studio)"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5",label:"5"},{value:"6+",label:"6+"}]} form={form} set={set}/></div>
               <div style={lockStyle("bathrooms")}><F label="Bathrooms" path="ficha.bathrooms" options={[{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"},{value:"5+",label:"5+"}]} form={form} set={set}/></div>
               <div style={lockStyle("toilets")}><F label="Toilets (optional)" path="ficha.toilets" options={[{value:"0",label:"0"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3+",label:"3+"}]} form={form} set={set}/></div>
               <div style={lockStyle("heating")}><F label="Heating" path="ficha.heating" options={[{value:"Central",label:"Central"},{value:"Splits",label:"Splits"},{value:"Central + Splits",label:"Central + Splits"},{value:"None",label:"None"}]} form={form} set={set}/></div>
@@ -569,15 +572,15 @@ export default function App() {
               <div style={lockStyle("refurbishedYear")}><F label="Refurbished Year" path="ficha.refurbishedYear" options={[{value:"N/A",label:"N/A (Not refurbished)"},...[...Array(30)].map((_,i)=>({value:String(2026-i),label:String(2026-i)}))]} form={form} set={set}/></div>
               <div style={lockStyle("aptFloor")}><F label="Apartment Floor (optional)" path="ficha.aptFloor" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i),label:String(i)}))]} form={form} set={set}/></div>
               <div style={lockStyle("buildingFloors")}><F label="Building Total Floors (optional)" path="ficha.buildingFloors" options={[{value:"",label:"N/A"},...[...Array(20)].map((_,i)=>({value:String(i+1),label:String(i+1)}))]} form={form} set={set}/></div>
-              <div style={lockStyle("newBuilt")}><F label="New Built" path="ficha.newBuilt" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
+              <div style={lockStyle("newBuilt")}><F label="New Built" path="ficha.newBuilt" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div></>}
             </Grid>
-            {f.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
+            {!isPlot&&f.newBuilt==="Yes"&&<Grid style={{marginTop:14}}>
               <F label="End Month" path="ficha.newBuiltEndMonth" options={[{value:"January",label:"January"},{value:"February",label:"February"},{value:"March",label:"March"},{value:"April",label:"April"},{value:"May",label:"May"},{value:"June",label:"June"},{value:"July",label:"July"},{value:"August",label:"August"},{value:"September",label:"September"},{value:"October",label:"October"},{value:"November",label:"November"},{value:"December",label:"December"}]} form={form} set={set}/>
               <F label="End Year" path="ficha.newBuiltEndYear" options={[...Array(10)].map((_,i)=>({value:String(2024+i),label:String(2024+i)}))} form={form} set={set}/>
             </Grid>}
           </Card>
 
-          <Card title="Features & Amenities">
+          {!isPlot&&<Card title="Features & Amenities">
             <Grid>
               <div style={lockStyle("uploadWeb")}><F label="Upload on WEB" path="ficha.uploadWeb" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
               <div style={lockStyle("uploadIdealista")}><F label="Upload on IDEALISTA" path="ficha.uploadIdealista" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
@@ -612,7 +615,7 @@ export default function App() {
               <div style={lockStyle("fireplace")}><F label="Fireplace" path="ficha.fireplace" options={[{value:"",label:"Select..."},{value:"Yes",label:"Yes"},{value:"No",label:"No"}]} form={form} set={set}/></div>
               <div style={lockStyle("ceeRating")}><F label="CEE (Energy Certificate)" path="ficha.ceeRating" options={[{value:"",label:"Select..."},{value:"A",label:"A"},{value:"B",label:"B"},{value:"C",label:"C"},{value:"D",label:"D"},{value:"E",label:"E"},{value:"F",label:"F"},{value:"Pending",label:"Pending"}]} form={form} set={set}/></div>
             </Grid>
-          </Card>
+          </Card>}
 
           <div style={lockStyle("description")}>
           <Card title="Property Description *">
