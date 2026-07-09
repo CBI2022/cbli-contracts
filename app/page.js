@@ -364,7 +364,9 @@ export default function App() {
           body: JSON.stringify(form),
         });
       }
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try { data = JSON.parse(text); } catch { throw new Error(text.substring(0, 100) || "Server error — try again or reduce file sizes"); }
       if (!response.ok) throw new Error(data.error || "Generation failed");
       let email;
       if (form.type === "ficha") {

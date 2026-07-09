@@ -3,6 +3,9 @@ import { generateContractDocx } from '@/lib/contract-generator-docx';
 import { generateFicha } from '@/lib/ficha-generator';
 import { Resend } from 'resend';
 
+// Allow longer execution for file processing
+export const maxDuration = 30;
+
 export async function POST(request) {
   try {
     let formData;
