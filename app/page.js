@@ -145,7 +145,7 @@ export default function App() {
   const [translatedCond, setTranslatedCond] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]); /* separate state for File objects — not deep-cloned */
 
-  const show = (msg, type="ok") => { setToast({msg,type}); setTimeout(()=>setToast(null),4500); };
+  const show = (msg, type="ok") => { setToast({msg,type}); setTimeout(()=>setToast(null), type==="err" ? 8000 : 4500); };
 
   const set = useCallback((path, val) => {
     setForm(prev => {
@@ -534,9 +534,17 @@ export default function App() {
             if (!filled(f[seq[i]]) && !optional.has(seq[i])) { activeIdx = i; break; }
           }
           const canEdit = (field) => { const idx = seq.indexOf(field); return idx <= activeIdx; };
-          const lockStyle = (field) => canEdit(field) ? {} : {opacity:0.35,pointerEvents:"none"};
-          const lockStyleCard = (fields) => fields.some(fld => canEdit(fld)) ? {} : {opacity:0.35,pointerEvents:"none"};
+          const isActive = (field) => seq.indexOf(field) === activeIdx;
+          const lockStyle = (field) => {
+            if (!canEdit(field)) return {opacity:0.35,pointerEvents:"none"};
+            if (isActive(field)) return {borderLeft:"3px solid #CC3333",paddingLeft:8,borderRadius:4,transition:"all 0.3s"};
+            return {};
+          };
+          const activeLabel = activeIdx < seq.length ? seq[activeIdx] : null;
+          const fieldNames = {price:"Price",ibi:"IBI",community:"Community",garbage:"Garbage",plotM2:"Plot Size",surfaceBuilt:"Surface Built",builtYear:"Year Built",orientation:"Orientation",floors:"Floors",timeOnMarket:"Time on Market",bedrooms:"Bedrooms",bathrooms:"Bathrooms",toilets:"Toilets",heating:"Heating",parkings:"Parkings",refurbishedYear:"Refurbished Year",aptFloor:"Apartment Floor",buildingFloors:"Building Floors",newBuilt:"New Built",uploadWeb:"Upload on WEB",uploadIdealista:"Upload on IDEALISTA",underground:"Underground",views:"Views",coveredGarage:"Covered Garage",guestApartment:"Guest Apartment",airConditioning:"Air Conditioning",swimmingPool:"Swimming Pool",furnitureIncluded:"Furniture Included",lift:"Lift",garden:"Garden",touristLicence:"Tourist Licence",cbiSign:"CBI Sign",haveKeys:"Keys",bbq:"BBQ",storageRoom:"Storage Room",summerKitchen:"Summer Kitchen",laundryRoom:"Laundry Room",outdoorShower:"Outdoor Shower",jacuzzi:"Jacuzzi",fireplace:"Fireplace",ceeRating:"CEE Rating",description:"Property Description"};
           return <>
+          {activeLabel&&<div style={{background:"#FFF3F3",border:"1px solid #CC3333",borderRadius:8,padding:"10px 16px",marginBottom:16,fontSize:13,color:"#CC3333",fontWeight:600}}>👉 Please fill in: <strong>{fieldNames[activeLabel]||activeLabel}</strong></div>}
+          {activeIdx>=seq.length&&<div style={{background:"#F0FFF0",border:"1px solid #2D7A4F",borderRadius:8,padding:"10px 16px",marginBottom:16,fontSize:13,color:"#2D7A4F",fontWeight:600}}>✅ All fields completed! Click Next to continue.</div>}
           <Card title="Pricing">
             <div style={lockStyle("price")}><Grid>
               <F label="Price Including Commission (€)" path="ficha.price" type="number" form={form} set={set} ph="450000"/>
