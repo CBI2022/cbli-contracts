@@ -115,7 +115,7 @@ const blank = () => ({
     { enabled: false, type: "Trastero", catastral: "", finca: "", tomo: "", libro: "", folio: "" },
   ],
   ficha: {
-    price: "", agent: "", address: "", city: "", owner: "", phone: "", propertyType: "Villa", date: "", commissionRate: "", ivaIncluded: false,
+    price: "", agent: "", address: "", city: "", owner: "", phone: "", email: "", propertyType: "Villa", date: "", commissionRate: "", ivaIncluded: false,
     ibi: "", community: "", garbage: "", utilities: "",
     plotM2: "", surfaceBuilt: "", m2Useful: "", builtYear: "", orientation: "", floors: "", timeOnMarket: "",
     bedrooms: "", bathrooms: "", toilets: "", heating: "", parkings: "", refurbishedYear: "",
@@ -190,6 +190,7 @@ export default function App() {
       // Ficha validation (5 steps: Type, Owner, Property, Documents, Review)
       if (s === 2) {
         if (!form.ficha.owner?.trim()) return "Enter owner name";
+        if (!form.ficha.phone?.trim()) return "Enter phone number";
         if (!form.ficha.address?.trim()) return "Enter property address";
         if (!form.ficha.city?.trim()) return "Enter city";
         if (!form.ficha.commissionRate?.trim()) return "Enter commission rate";
@@ -444,7 +445,8 @@ export default function App() {
             <Card title="Property Owner">
               <Grid>
                 <F label="Owner Name" path="ficha.owner" form={form} set={set} ph="Full name"/>
-                <F label="Phone / Email" path="ficha.phone" form={form} set={set} ph="+34 600 000 000"/>
+                <F label="Phone Number" path="ficha.phone" form={form} set={set} ph="+34 600 000 000"/>
+                <F label="Email (optional)" path="ficha.email" form={form} set={set} ph="owner@email.com"/>
               </Grid>
               <Grid style={{marginTop:14}}>
                 <F label="Address" path="ficha.address" form={form} set={set} full ph="Full property address"/>
@@ -763,7 +765,8 @@ export default function App() {
                 ["Property",form.ficha.propertyType+" — "+(form.ficha.address||"—")],
                 ["City",form.ficha.city||"—"],
                 ["Owner",form.ficha.owner||"—"],
-                ["Contact",form.ficha.phone||"—"],
+                ["Phone",form.ficha.phone||"—"],
+                ["Email",form.ficha.email||"—"],
                 ["Bedrooms",form.ficha.bedrooms||"—"],
                 ["Bathrooms",form.ficha.bathrooms||"—"],
                 ["Built m²",form.ficha.surfaceBuilt||"—"],
