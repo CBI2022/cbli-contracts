@@ -343,6 +343,23 @@ export default function App() {
     setGenState("idle");
   };
 
+  /* Compress image files to stay under Vercel 4.5MB payload limit */
+  const compressImage = (file, maxSizeKB = 400) => new Promise((resolve) => {
+    if (file.type === 'application/pdf' || !file.type.startsWith('image/')) { resolve(file); return; }
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      const maxDim = 1200;
+      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob((blob) => { resolve(blob || file); }, 'image/jpeg', 0.7);
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+
   const generate = async () => {
     setGenState("generating");
     try {
@@ -352,7 +369,12 @@ export default function App() {
         if (validFiles.length > 0) {
           const fd = new FormData();
           fd.append('formData', JSON.stringify(form));
-          validFiles.forEach(f => fd.append('files', f.file, f.name));
+          /* Compress images to avoid FUNCTION_PAYLOAD_TOO_LARGE */
+          for (const f of validFiles) {
+            const compressed = await compressImage(f.file);
+            const name = f.name.replace(/\.[^.]+$/, '') + (compressed !== f.file ? '.jpg' : f.name.match(/\.[^.]+$/)?.[0] || '');
+            fd.append('files', compressed, name || f.name);
+          }
           response = await fetch("/api/generate", { method: "POST", body: fd });
         } else {
           response = await fetch("/api/generate", {
