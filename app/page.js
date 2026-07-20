@@ -196,32 +196,35 @@ export default function App() {
         if (!form.ficha.commissionRate?.trim()) return "Enter commission rate";
       }
       if (s === 3) {
+        const isPlot = form.ficha.propertyType === "Plot";
         if (!form.ficha.price?.trim()) return "Enter property price";
         if (!form.ficha.plotM2?.trim()) return "Enter plot size";
-        if (!form.ficha.surfaceBuilt?.trim()) return "Enter surface built";
-        if (!form.ficha.builtYear?.trim()) return "Select year built";
-        if (!form.ficha.orientation?.trim()) return "Select orientation";
-        if (!form.ficha.floors?.trim()) return "Select number of floors";
-        if (!form.ficha.bedrooms?.trim()) return "Select number of bedrooms";
-        if (!form.ficha.bathrooms?.trim()) return "Select number of bathrooms";
-        if (!form.ficha.heating?.trim()) return "Select heating type";
-        if (!form.ficha.parkings?.trim()) return "Select number of parkings";
-        // Features required
-        if (!form.ficha.uploadWeb || form.ficha.uploadWeb === "") return "Select Upload on WEB";
-        if (!form.ficha.uploadIdealista || form.ficha.uploadIdealista === "") return "Select Upload on IDEALISTA";
-        if (!form.ficha.underground || form.ficha.underground === "") return "Select Underground";
-        if (!form.ficha.views || form.ficha.views === "") return "Select Views";
-        if (!form.ficha.coveredGarage || form.ficha.coveredGarage === "") return "Select Covered Garage";
-        if (!form.ficha.guestApartment || form.ficha.guestApartment === "") return "Select Guest Apartment";
-        if (!form.ficha.airConditioning || form.ficha.airConditioning === "") return "Select Air Conditioning";
-        if (!form.ficha.swimmingPool || form.ficha.swimmingPool === "") return "Select Swimming Pool";
-        if (!form.ficha.furnitureIncluded || form.ficha.furnitureIncluded === "") return "Select Furniture Included";
-        if (!form.ficha.lift || form.ficha.lift === "") return "Select Lift";
-        if (!form.ficha.garden || form.ficha.garden === "") return "Select Garden";
-        if (!form.ficha.touristLicence || form.ficha.touristLicence === "") return "Select Tourist Licence";
-        if (!form.ficha.cbiSign || form.ficha.cbiSign === "") return "Select CBI Sign outside";
-        if (!form.ficha.haveKeys || form.ficha.haveKeys === "") return "Select Do we have keys";
-        if (!form.ficha.ceeRating || form.ficha.ceeRating === "") return "Select CEE energy rating";
+        if (!isPlot) {
+          if (!form.ficha.surfaceBuilt?.trim()) return "Enter surface built";
+          if (!form.ficha.builtYear?.trim()) return "Select year built";
+          if (!form.ficha.orientation?.trim()) return "Select orientation";
+          if (!form.ficha.floors?.trim()) return "Select number of floors";
+          if (!form.ficha.bedrooms?.trim()) return "Select number of bedrooms";
+          if (!form.ficha.bathrooms?.trim()) return "Select number of bathrooms";
+          if (!form.ficha.heating?.trim()) return "Select heating type";
+          if (!form.ficha.parkings?.trim()) return "Select number of parkings";
+          // Features required
+          if (!form.ficha.uploadWeb || form.ficha.uploadWeb === "") return "Select Upload on WEB";
+          if (!form.ficha.uploadIdealista || form.ficha.uploadIdealista === "") return "Select Upload on IDEALISTA";
+          if (!form.ficha.underground || form.ficha.underground === "") return "Select Underground";
+          if (!form.ficha.views || form.ficha.views === "") return "Select Views";
+          if (!form.ficha.coveredGarage || form.ficha.coveredGarage === "") return "Select Covered Garage";
+          if (!form.ficha.guestApartment || form.ficha.guestApartment === "") return "Select Guest Apartment";
+          if (!form.ficha.airConditioning || form.ficha.airConditioning === "") return "Select Air Conditioning";
+          if (!form.ficha.swimmingPool || form.ficha.swimmingPool === "") return "Select Swimming Pool";
+          if (!form.ficha.furnitureIncluded || form.ficha.furnitureIncluded === "") return "Select Furniture Included";
+          if (!form.ficha.lift || form.ficha.lift === "") return "Select Lift";
+          if (!form.ficha.garden || form.ficha.garden === "") return "Select Garden";
+          if (!form.ficha.touristLicence || form.ficha.touristLicence === "") return "Select Tourist Licence";
+          if (!form.ficha.cbiSign || form.ficha.cbiSign === "") return "Select CBI Sign outside";
+          if (!form.ficha.haveKeys || form.ficha.haveKeys === "") return "Select Do we have keys";
+          if (!form.ficha.ceeRating || form.ficha.ceeRating === "") return "Select CEE energy rating";
+        }
         if (!form.ficha.description?.trim()) return "Enter property description";
       }
       if (s === 4) {
