@@ -187,7 +187,7 @@ export default function App() {
       if (!form.city?.trim()) return "Enter the city";
     }
     if (form.type === "ficha") {
-      // Ficha validation (5 steps: Type, Owner, Property, Documents, Review)
+      // Ficha validation (4 steps: Type, Owner, Property, Review)
       if (s === 2) {
         if (!form.ficha.owner?.trim()) return "Enter owner name";
         if (!form.ficha.phone?.trim()) return "Enter phone number";
@@ -227,17 +227,7 @@ export default function App() {
         }
         if (!form.ficha.description?.trim()) return "Enter property description";
       }
-      if (s === 4) {
-        // File validation — only ID/Passport and Contract of Sale required
-        const requiredDocs = ['dniPassports', 'contract'];
-        const missingRequired = requiredDocs.filter(docType => {
-          const hasFile = uploadedFiles.some(f => f.type === docType);
-          return !hasFile;
-        });
-        if (missingRequired.length > 0) {
-          const docNames = { dniPassports: 'ID/Passport Seller', contract: 'Contract of Sale' };
-          return `Missing required documents: ${missingRequired.map(d => docNames[d]).join(', ')}`;
-        }
+      if (false) { /* Documents step removed */
       }
     } else {
       // Regular contracts validation
@@ -347,17 +337,21 @@ export default function App() {
   };
 
   /* Compress image files to stay under Vercel 4.5MB payload limit */
-  const compressImage = (file, maxSizeKB = 400) => new Promise((resolve) => {
-    if (file.type === 'application/pdf' || !file.type.startsWith('image/')) { resolve(file); return; }
+  const compressImage = (file) => new Promise((resolve) => {
+    if (file.type === 'application/pdf' || !file.type.startsWith('image/')) {
+      /* For PDFs over 3MB, skip them */
+      if (file.size > 3 * 1024 * 1024) { resolve(null); return; }
+      resolve(file); return;
+    }
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let w = img.width, h = img.height;
-      const maxDim = 1200;
+      const maxDim = 900;
       if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      canvas.toBlob((blob) => { resolve(blob || file); }, 'image/jpeg', 0.7);
+      canvas.toBlob((blob) => { resolve(blob || file); }, 'image/jpeg', 0.5);
     };
     img.onerror = () => resolve(file);
     img.src = URL.createObjectURL(file);
@@ -376,11 +370,22 @@ export default function App() {
         if (validFiles.length > 0) {
           const fd = new FormData();
           fd.append('formData', JSON.stringify(form));
-          /* Compress images to avoid FUNCTION_PAYLOAD_TOO_LARGE */
+          /* Compress images and skip files too large */
+          let skippedFiles = [];
+          let totalSize = 0;
           for (const f of validFiles) {
             const compressed = await compressImage(f.file);
+            if (!compressed) { skippedFiles.push(f.name); continue; }
+            /* Skip if single file still over 2MB after compression */
+            if (compressed.size > 2 * 1024 * 1024) { skippedFiles.push(f.name); continue; }
+            /* Skip if total would exceed 3.5MB */
+            if (totalSize + compressed.size > 3.5 * 1024 * 1024) { skippedFiles.push(f.name); continue; }
+            totalSize += compressed.size;
             const name = f.name.replace(/\.[^.]+$/, '') + (compressed !== f.file ? '.jpg' : f.name.match(/\.[^.]+$/)?.[0] || '');
             fd.append('files', compressed, name || f.name);
+          }
+          if (skippedFiles.length > 0) {
+            show(`Some files were too large and skipped: ${skippedFiles.join(', ')}. The ficha PDF will still be sent.`, "info");
           }
           response = await fetch("/api/generate", { method: "POST", body: fd });
         } else {
@@ -427,7 +432,7 @@ export default function App() {
       </div></header>
 
       <div style={S.stepsOuter}><div style={S.stepsInner}>
-        {(form.type==="ficha"?["Type","Owner","Property","Documents","Review"]:["Contract","Parties","Property","Price","Conditions","Generate"]).map((s,i)=>(
+        {(form.type==="ficha"?["Type","Owner","Property","Review"]:["Contract","Parties","Property","Price","Conditions","Generate"]).map((s,i)=>(
           <div key={i} style={S.step(step===i+1,step>i+1)} onClick={()=>go(i+1)}>
             <span style={S.stepNum(step===i+1,step>i+1)}>{step>i+1?"✓":i+1}</span>
             <span style={S.stepLbl}>{s}</span>
@@ -747,33 +752,6 @@ export default function App() {
           </>}
         </>}
 
-        {form.type==="ficha"&&step===4&&<>
-          <Card title="Upload Documents">
-            <Note>Upload or take a photo of property documents. On mobile, tap "Take Photo" to use your camera.</Note>
-            <div style={{display:"flex",flexDirection:"column",gap:16}}>
-              {[
-                {type:"dniPassports",label:"ID/Passport Seller",req:true},
-                {type:"contract",label:"Contract of Sale",req:true},
-                {type:"ibi",label:"IBI (Property Tax)",req:false},
-                {type:"garbage",label:"Garbage / Basura",req:false},
-                {type:"community",label:"Community / Comunidad",req:false},
-                {type:"floorPlans",label:"Floor Plans",req:false},
-                {type:"escritura",label:"Escritura (Purchase Deed)",req:false},
-                {type:"invoice",label:"Water/Electricity/Gas Invoice",req:false},
-              ].map(doc=>(
-                <div key={doc.type}>
-                  <label style={S.fLabel}>{doc.label}{doc.req?" - Required":" - Optional"}</label>
-                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e=>{const f=e.target.files?.[0];if(f)setUploadedFiles(prev=>[...prev.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])}} style={{...S.input,flex:1,cursor:"pointer"}}/>
-                    <button type="button" onClick={()=>{const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.capture='environment';inp.onchange=e=>{const f=e.target.files?.[0];if(f)setUploadedFiles(prev=>[...prev.filter(x=>x.type!==doc.type),{type:doc.type,name:f.name,file:f}])};inp.click()}} style={{padding:"8px 12px",background:"#1A3A5C",color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}>📷 Take Photo</button>
-                  </div>
-                  {uploadedFiles.find(x=>x.type===doc.type)&&<div style={{fontSize:11,color:"#2D7A4F",marginTop:6}}>✓ {uploadedFiles.find(x=>x.type===doc.type).name}</div>}
-                </div>
-              ))}
-            </div>
-          </Card>
-          <Nav onBack={()=>go(3)} onNext={()=>go(5)}/>
-        </>}
 
         {form.type!=="commission"&&form.type!=="ficha"&&step===5&&<>
           <Card title="Special Conditions">
@@ -784,7 +762,7 @@ export default function App() {
           <Nav onBack={()=>go(4)} onNext={()=>{translateConditions();go(6);}} nextLabel="Preview & Generate →"/>
         </>}
 
-        {((form.type==="ficha"&&step===5)||(form.type!=="ficha"&&step===6))&&<>
+        {((form.type==="ficha"&&step===4)||(form.type!=="ficha"&&step===6))&&<>
           <div style={S.banner}>⚡ <strong>Review all details.</strong> Click Generate to create the {form.type==="ficha"?"ficha PDF":"contract"}.</div>
 
           {form.type==="ficha"?<>
@@ -802,9 +780,6 @@ export default function App() {
                 ["Date",fmtDate(form.date)],
               ].map(([l,v],i)=>(<div key={i} style={S.sumItem}><div style={S.sumL}>{l}</div><div style={S.sumV}>{v}</div></div>))}
             </div></Card>
-            <Card title="Uploaded Documents">
-              {uploadedFiles.length===0?<div style={{color:"#8A8A8A",fontSize:13}}>No files uploaded yet</div>:uploadedFiles.map((f,i)=>(<div key={i} style={{fontSize:12,padding:"6px 0",color:"#2D7A4F"}}>✓ {f.name}</div>))}
-            </Card>
           </>:<>
             <Card title="Deal Summary"><div style={S.sumGrid}>
               {(form.type==="commission"?
@@ -855,7 +830,7 @@ export default function App() {
           </Card>}
 
           <div style={{display:"flex",gap:12,marginTop:4}}>
-            <button style={S.btnSec} onClick={()=>go(5)}>← Edit</button>
+            <button style={S.btnSec} onClick={()=>go(form.type==="ficha"?3:5)}>← Edit</button>
             <button style={{...S.btnGen,opacity:genState==="generating"?0.6:1}} onClick={generate} disabled={genState==="generating"}>
               {genState==="generating"?"⏳ Generating & Sending...":genState==="done"?"✅ Sent! — Send Again":form.type==="ficha"?"📧 Generate & Send Ficha":"📧 Generate & Send to Lawyer"}
             </button>
