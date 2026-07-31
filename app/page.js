@@ -364,6 +364,10 @@ export default function App() {
   });
 
   const generate = async () => {
+    if (form.type === "ficha" && !form.ficha?.agentEmailName) {
+      show("Please select your name in 'Send To' before generating", "err");
+      return;
+    }
     setGenState("generating");
     try {
       let response;
